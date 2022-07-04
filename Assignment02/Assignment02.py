@@ -42,3 +42,19 @@ elif (x % 3 == 0):
 elif (x % 15 != 0):
     print("Not a multiple of 3, 5, or 15")
 
+### or (don't grade this please, I was just trying it)
+
+x = int(input('Enter number for x here: '))
+x = 30
+
+
+if (type(x/15) == int):
+   print("foobar")
+elif (type(x/3) == int):
+    print("foo")
+elif (type(x/5)== int):
+    print("bar")
+elif (type(x/15) == float):
+   print("Not a multiple of 3, 5, or 15")
+   
+##does division always make something a float?

@@ -31,8 +31,29 @@ B[:6] + B[10:15] + B[20:25]
 
 #5
 x = int(input('Enter number for x here: '))
-x = 22
+x = "cat"
 
+# Didn't define the function and didn't provide headers, description, or examples (-15)
+# Example: 
+
+# def foobar(value: int) -> str:
+    # """ 
+    # This function takes an integer and applies the following rules: 
+    # * If it is a multiple of 3 return the string "foo"
+    # * If it is a multiple of 5 return the string "bar"
+    # * If it is a multiple of 15 return the string "foobar"
+    # * If it does not satisfy any of those, return the string "Not a multiple of 3, 5, or 15"
+    # >>> foobar(9)
+    # "foo"
+    # >>> foobar(10)
+    # "bar"
+    # >>> foobar(45)
+    # "foobar"
+    # >>> foobar(19)
+    # "Not a multiple of 3, 5, or 15"   
+    # """
+
+    
 if (x % 15 == 0):
    print("foobar")
 elif (x % 5 == 0):
@@ -41,20 +62,10 @@ elif (x % 3 == 0):
     print("foo")
 elif (x % 15 != 0):
     print("Not a multiple of 3, 5, or 15")
-
-### or (don't grade this please, I was just trying it)
-
-x = int(input('Enter number for x here: '))
-x = 30
+    
+##does division always make something a float? (I believe so)
 
 
-if (type(x/15) == int):
-   print("foobar")
-elif (type(x/3) == int):
-    print("foo")
-elif (type(x/5)== int):
-    print("bar")
-elif (type(x/15) == float):
-   print("Not a multiple of 3, 5, or 15")
-   
-##does division always make something a float?
+# No test cases and No catch for non numeric values
+# changed line 34 to a string and it breaks (-5)
+

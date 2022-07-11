@@ -10,8 +10,6 @@ import numpy as np
 help(np.random.uniform)
   
 points = 1000000
-pi = np.random.uniform(0,1,points)
-
 circlepoints = 0
 squarepoints = 0
 

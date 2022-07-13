@@ -50,6 +50,9 @@ FirstColumnSum
 SecondColumnSum
 ThirdColumnSum
 FourthColumnSum 
+
+# Check out np.Array.sum()
+
 #cumulative sum of row values
 CumulativeRowSum = (FirstRowSum + SecondRowSum + ThirdRowSum)
 
@@ -78,4 +81,4 @@ np.abs(B)
 a = np.array([[1,20],[1,-40]])
 b = np.array([[286],[88]])
 x = np.linalg.solve(a,b)
-print(x)
+print(x) # Which one is eq price and which one is eq quantity? (-4)

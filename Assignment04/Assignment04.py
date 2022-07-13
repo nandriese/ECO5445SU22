@@ -17,7 +17,7 @@ for i in range(points):
     xpoint = np.random.uniform(0,1)
     ypoint = np.random.uniform(0,1)
     
-    dist = (((xpoint-.5)**2) + (ypoint-.5)**2)**(1/2)
+    dist = np.sqrt(((xpoint-.5)**2) + (ypoint-.5)**2) # np.sqrt is more precise than raising to 1/2 power
     
     if dist <= .5:
         circlepoints += 1

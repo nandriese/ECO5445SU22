@@ -67,7 +67,7 @@ print(maxAgProvince) ## 33, which is Herens. I've looked up if the actual row na
 cor(swiss)
 
 #7
-plot(swiss$Education, swiss$Fertility)
+plot(swiss$Education, swiss$Fertility, main = "Relationship between Education and Fertility", xlab = "Education", ylab = "Fertility")
 
 #7
-hist(swiss$Catholic)
+hist(swiss$Catholic, main = "Swiss Catholic Prevalence", xlab = "Percent Catholic", ylab = "Number of Provinces")

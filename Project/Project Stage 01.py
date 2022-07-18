@@ -67,6 +67,8 @@ PrjData.plot
 plt.hist(PrjData["RaceAppl"])
 plt.hist(PrjData["Debt/IncomeTotal"])
 plt.scatter(PrjData["Debt/IncomeTotal"], PrjData["PurchasePrice"])
+PrjData[["RaceAppl", "TypeAction"]].groupby("RaceAppl").value_counts()
+PrjData[["RaceAppl", "SelfEmpApp"]].groupby("RaceAppl").value_counts()
 # 5 Baseline Probability of being approved for a mortgage
 
 PrjData.TypeAction.value_counts()

@@ -182,7 +182,6 @@ vif(model1)
 ##no concerns of multicollinearity
 
 ###model comparison
-anova(model1, model2)
 model2 <- lm(sale_def ~ bed + bath + area_heated + area + dist_cbd + pool, data=prprice)
 
 newmodel2 <- lm(sale_def ~ bed + bath + area_heated + area + dist_cbd + pool, data=prprice[-c(37),])

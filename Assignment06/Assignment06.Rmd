@@ -1,0 +1,389 @@
+---
+title: "Assignment 6"
+author: "Nick Andriese"
+date: '2022-07-24'
+output: 
+  html_document:
+    toc: true
+    toc_float: true
+    number_sections: true
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r packages}
+
+#install.packages("car","gvlma", "MASS", "leaps")
+library(car)
+library(gvlma)
+library(MASS)
+library(leaps)
+```
+
+We are going to look at the property prices for Orange County. From there we are going to try and predict the sales price by linear regression.
+
+# Importing Data 
+
+Bring in the data and make sure the data types are correct. If not, make the proper changes. The file is located within this project. *data/prop_prices_reduced.csv*
+
+```{r}
+library(readr)
+prprice <- read_csv("prop_prices_reduced.csv")
+View(prprice)
+prprice$pool <- factor(prprice$pool)
+
+```
+
+
+# Plotting
+
+Plot histograms for all variables. Additionally, add scatterplots for the relationships between all quantitative variables.
+
+```{r}
+library(car)
+hist(prprice$sale_def)
+hist(prprice$bed)
+hist(prprice$bath)
+hist(prprice$area_heated)
+hist(prprice$area)
+hist(prprice$dist_cbd)
+hist(prprice$dist_lakes)
+plot(prprice$pool)
+
+scatterplotMatrix(prprice, spread = FALSE, lty.smooth = 2, main = "Scatterplot Matrix")
+
+
+prprice1 <- prprice
+
+
+
+#excess below
+
+plot(prprice$bed, prprice$sale_def)
+plot(prprice$bath, prprice$sale_def)
+plot(prprice$area_heated, prprice$sale_def)
+plot(prprice$area, prprice$sale_def)
+plot(prprice$dist_cbd, prprice$sale_def)
+plot(prprice$dist_lakes, prprice$sale_def)
+plot(prprice$pool, prprice$sale_def)
+plot(prprice$bed, prprice$bath)
+plot(prprice$bed, prprice$area_heated)
+plot(prprice$bed, prprice$area)
+plot(prprice$bed, prprice$dist_cbd)
+plot(prprice$bed, prprice$dist_lakes)
+plot(prprice$bed, prprice$pool)
+plot(prprice$bath, prprice$area_heated)
+plot(prprice$bath, prprice$area)
+plot(prprice$bath, prprice$dist_cbd)
+plot(prprice$bath, prprice$dist_lakes)
+plot(prprice$bath, prprice$pool)
+plot(prprice$pool, prprice$area_heated)
+plot(prprice$pool, prprice$area)
+plot(prprice$pool, prprice$dist_cbd)
+plot(prprice$pool, prprice$dist_lakes)
+plot(prprice$area_heated, prprice$area)
+plot(prprice$area_heated, prprice$dist_cbd)
+plot(prprice$area_heated, prprice$dist_lakes)
+plot(prprice$area, prprice$dist_cbd)
+plot(prprice$area, prprice$dist_lakes)
+plot(prprice$dist_cbd, prprice$dist_lakes)
+```
+
+# Summary Statistics
+
+Provide basic summary statistics for univariate analysis. Also, provide the correlation between all the quantitative variables.
+
+```{r}
+#install.packages("psych")
+library(psych)
+summary(prprice)
+describe(prprice)
+
+cor(prprice[,unlist(lapply(prprice, is.numeric))])
+```
+
+# Regression Analysis
+
+Run a regression with all the variables included. Print results of the regression.
+
+```{r}
+model1 <- lm(sale_def ~., data = prprice)
+
+summary(model1)
+```
+
+Which of the variables tested significant at the 95% level? Looking at the results and answering outside of the chunk is sufficient.
+
+***bed, bath, area_heated, area, dist_cbd all tested significant above the the 95% level
+
+## Evaluating the model
+
+As is, are any of the Gauss-Markov assumptions violated? If so, which ones? How can you fix the issues?
+
+```{r}
+#Regression diagnostics
+opar <- par(no.readonly = TRUE)
+par(mfrow =c(2, 2))
+plot(model1)
+###only seems like #37 is vast outlier, in trending downward on residuals
+
+newmodel1 <- lm(sale_def ~., data = prprice[-c(37),])
+plot(newmodel1)
+### without 37 included
+
+#Normality
+qqPlot(model1, labels=FALSE, simulate = TRUE, main = "Q-Q Plot")
+qqPlot(newmodel1, labels=FALSE, simulate = TRUE, main = "Q-Q Plot")
+###appears to start curling around the tails, non-normal
+
+#autocorrelated erros
+durbinWatsonTest(model1)
+durbinWatsonTest(newmodel1)
+###not significant, no autocorrelation of errors
+
+#what does this test???
+crPlots(model1, one.page = TRUE, ask = FALSE)
+crPlots(newmodel1, one.page = TRUE, ask = FALSE)
+
+#Heteroskedasticity diagnostic:
+ncvTest(model1)
+ncvTest(newmodel1)
+###both models indicate heteroskedasticity
+###What should I do to correct for it? the power?
+spreadLevelPlot(model1)
+#heteroskedastic
+
+#gvlma
+library(gvlma)
+gvmodel1 <- gvlma(model1)
+summary(gvmodel1)
+plot.gvlma(gvmodel1)
+
+gbnewmodel1 <- gvlma(newmodel1)
+summary(gbnewmodel1)
+
+###all assumptions are violated: Global Stat, Skewness, Kurtosis, Link Function, Heteroskedasticity
+
+#Outliers
+outlierTest(model1)
+outlierTest(newmodel1)
+
+#Box Cox - Power Transformation
+summary(powerTransform(prprice$sale_def/prprice$area))
+#seems that both keeping it the same and taking the log of it will not be a good linear fit.
+
+#BoxTidwell
+boxTidwell(sale_def ~ bed +  area, data=prprice)
+#tried this with all of the variables but kept throwing an error.
+
+#Multicollinearity diagnostics
+vif(model1)
+##no concerns of multicollinearity
+
+###model comparison
+anova(model1, model2)
+model2 <- lm(sale_def ~ bed + bath + area_heated + area + dist_cbd + pool, data=prprice)
+
+newmodel2 <- lm(sale_def ~ bed + bath + area_heated + area + dist_cbd + pool, data=prprice[-c(37),])
+summary(newmodel2)
+anova(newmodel1,newmodel2)
+
+summary(model1)
+##
+par(opar)
+```
+
+## New Model
+
+Based off of your findings in the previous section, make changes to the variables, the functional form, etc.
+
+```{r}
+###will try multiple attempts to fix assumptions
+
+#normal model
+model1 <- lm(sale_def ~., data = prprice)
+summary(model1)
+plot(model1)
+summary(gvlma(model1))
+### adjusted r^2 = .5438, no assumption satisfied on gvlma, dist_lake not significant, outliers of 7 and 37
+
+#
+
+#model without dist_lake
+nolakemodel <- lm(sale_def ~ bed + bath + area + area_heated + dist_cbd + pool, data = prprice)
+summary(nolakemodel)
+plot(nolakemodel)
+summary(gvlma(nolakemodel))
+###adjusted r^2 = .5443, no assumptions satisfied
+
+#
+
+#model with dist_lake and outliers removed
+
+nolakemodel1 <- lm(sale_def ~ bed + bath + area + area_heated + dist_cbd + pool, data = prprice[-c(7,37),])
+summary(nolakemodel1)
+plot(nolakemodel1)
+summary(gvlma(nolakemodel1))
+### adjusted r^2 = .6894, pool teetering on significance, only heteroskedasticity is acceptable on gvlma
+
+#
+
+#log of y
+logmodel <- lm(log(sale_def) ~ bed + bath + area + area_heated + dist_cbd + pool, data = prprice)
+summary(logmodel)
+plot(logmodel)
+summary(gvlma(logmodel))
+###adjusted r^2 = .7393, all significant, only heteroskedasticity is acceptable on gvlma
+
+#
+
+#sqrt of y
+sqrtmodel <- lm(sqrt(sale_def) ~ bed + bath + area + area_heated + dist_cbd + pool, data = prprice[-c(7),])
+summary(sqrtmodel)
+plot(sqrtmodel)
+summary(gvlma(sqrtmodel))
+###no assumptions satisfied but adjusted r^2 = .7895
+
+#
+
+#combine sales and area
+SAmodel <- lm((sale_def/area) ~ bed + bath + area_heated + dist_cbd + dist_lakes + pool, data = prprice)
+summary(SAmodel)
+plot(SAmodel)
+summary(gvlma(SAmodel))
+###homoskedastic and link function satisfied, however adj r^2 = .2698, dist_cbd and pool not significant.
+
+# log combined sales and area y
+logSAmodel <- lm(log(sale_def/area) ~ bed + bath + area_heated + dist_cbd + (dist_lakes) + pool, data = prprice)
+summary(logSAmodel)
+plot(logSAmodel)
+summary(gvlma(logSAmodel))
+### adj r^2 = .2467, heteroskedasticity sat, dist_cbd and pool not significant
+
+
+#log combined sales and area, log all IVs
+logSAallmodel <- lm(log(sale_def/area) ~ log(bed) + log(bath) + log(area_heated) + log(dist_cbd) + log(dist_lakes) + (pool), data = prprice)
+summary(logSAallmodel)
+plot(logSAallmodel)
+summary(gvlma(logSAallmodel))
+### adj r^2 = .2704, pool not significant (not logged), heterosked and link function satisfied.
+
+#sqrt combined sales and area
+sqrtSAmodel <- lm(sqrt(sale_def/area) ~ bed + bath + area_heated + dist_cbd + (dist_lakes) + pool, data = prprice)
+summary(sqrtSAmodel)
+plot(sqrtSAmodel)
+summary(gvlma(sqrtSAmodel))
+### adj r^2 = .2697, dist_cbd and pool not significant, only heteroskedasticity satisfied
+
+#boxcox-transformation
+powermodel <- lm((sale_def^(-.33)) ~ bath + area_heated + dist_cbd + pool, data = prprice[-c(37,329),])
+summary(powermodel)
+plot(powermodel)
+summary(gvlma(powermodel))
+
+stepAIC(powermodel, direction = "backward")
+
+hist(prprice$sale_def^-.33)
+### highest I could get adj r^2 = .6678, no assumptions satisfied
+
+
+
+############
+### Researched this online to try and figure it out
+boxCox(model1, family="yjPower", plotit = TRUE)
+transale_def <- yjPower(prprice$sale_def, .22)
+
+
+
+boxcoxmodel <- lm((sale_def^(.22)) ~ bed + bath + (area_heated) + (area) + (dist_cbd) + pool, data = prprice[-c(7),])
+summary(boxcoxmodel)
+plot(boxcoxmodel)
+summary(gvlma(boxcoxmodel))
+### adj r^2 of .7843, hetero and link function satisfied.
+
+hist(prprice$sale_def^.22)
+
+###
+
+
+boxTidwell((sale_def) ~ bed + bath + area + area_heated + dist_cbd, other.x=~ pool, data = prprice[-c(7),])
+
+BoxTidmodel <- lm(sale_def ~ I(bed^(-8.65)) + I(bath^(3.72)) + I(area^(10.09)) + I(area_heated^(20.75)) + dist_cbd, data = prprice[-c(7),])
+summary(BoxTidmodel)
+plot(BoxTidmodel)
+summary(gvlma(BoxTidmodel))
+### adj r^2 of .8866 but the plots are wonky as can be. Won't give the gvlma.
+
+###############
+
+
+
+#I can't get anything to budge with the full gvlma satisfied.
+
+
+prprice1 <- data.frame(prprice)
+prprice1$sareaheated <- (prprice$sale_def/prprice$area_heated)
+prprice1$logsareaheated <- log(prprice$sale_def/prprice$area_heated)
+prprice1$sqrtareaheated <- sqrt(prprice$sale_def/prprice$area_heated)
+prprice1$salearea <- (prprice$sale_def/prprice$area)
+hist(prprice1$salearea)
+prprice1$logsalearea <- (log(prprice$sale_def/prprice$area))
+hist(prprice1$logsalearea)
+prprice1$sqrtsalearea <- (sqrt(prprice$sale_def/prprice$area))
+hist(prprice1$sqrtsalearea)
+prprice1$logsarea_heated <- (log(prprice$area_heated))
+hist(prprice1$logsarea_heated)
+prprice1$sqrtarea_heated <- (sqrt(prprice$area_heated))
+hist(prprice1$sqrtarea_heated)
+prprice1$logdist_lakes <- (log(prprice$dist_lakes))
+hist(prprice1$logdist_lakes)
+prprice1$sqrtdist_lakes<- (sqrt(prprice$dist_lakes))
+hist(prprice1$sqrtdist_lakes)
+prprice1$logbath <- (log(prprice$bath))
+hist(prprice1$logbath)
+prprice1$sqrtbath <- (sqrt(prprice$bath))
+hist(prprice1$sqrtbath)
+describe(prprice1)
+describe(prprice)
+#^^^^ this was for me to check kurtosis and skew, etc.
+#################
+
+
+#######
+####
+##
+#Conclusion, using boxcoxmodel
+boxcoxmodel <- lm((sale_def^(.22)) ~ bed + bath + (area_heated) + (area) + (dist_cbd) + pool, data = prprice[-c(7),])
+summary(boxcoxmodel)
+plot(boxcoxmodel)
+summary(gvlma(boxcoxmodel))
+### adj r^2 of .7843, hetero and link function satisfied.
+
+# this was HELL
+
+```
+
+
+
+# Prediction
+
+Based on the following inputs, predict the deflated sales price:
+
+- 2 bed
+- 2 bath
+- area_heated = 1223
+- area = 9750
+- dist_cbd = 19368
+- dist_lakes = 490
+- no pool
+
+```{r}
+NewData <-data.frame("bed" = 2, "bath" =2, "area_heated" =1223, "area"=9750, "dist_cbd"=19368, "dist_lakes"=490, "pool"=factor(0))
+x <- predict(boxcoxmodel, NewData)
+
+PredictedCost <- (exp(1))^(log(x)/.22)
+print(PredictedCost)
+
+```

@@ -350,6 +350,19 @@ describe(prprice)
 
 
 ```{r}
+### Researched this online to try and figure it out
+boxCox(model1, family="yjPower", plotit = TRUE)
+transale_def <- yjPower(prprice$sale_def, .22)
+
+
+
+boxcoxmodel <- lm((sale_def^(.22)) ~ bed + bath + (area_heated) + (area) + (dist_cbd) + pool, data = prprice[-c(7),])
+summary(boxcoxmodel)
+plot(boxcoxmodel)
+summary(gvlma(boxcoxmodel))
+### adj r^2 of .7843, hetero and link function satisfied.
+
+hist(prprice$sale_def^.22)
 
 
 #######

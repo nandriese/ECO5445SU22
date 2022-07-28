@@ -1,11 +1,12 @@
+# Future submissions, please submit Rmd files
 
 #2, repeat question 2 and 5 from assignment 02
 
-a <- (2)
+a <- (2) # if it is one value, you do not need quotes
 b <- (2.0)
-c <- ("10j")
+c <- ("10j") # Did you try without the quotes?
 d <- ("2 Cool for School")
-e <- ("True")
+e <- ("True") # Did you try without the quotes?
 
 class(a)
 class(b)
@@ -49,19 +50,20 @@ FoobarFunction <- function(x) {
 }
   
 FoobarFunction(45)
+# Only ran one test (-1)
 
 # 3
 attach(swiss)
 
 #4
 summary(swiss)
+# missing spread of data (sd or variance) (-5)
 
 #5
 agrSwiss <- swiss$Agriculture
 maxAg <- max(agrSwiss)
 maxAgProvince <- which(agrSwiss == (maxAg))
-print(row.names(maxAgProvince))  ##this returns "NULL" although it should be "Herens"
-print(maxAgProvince) ## 33, which is Herens. I've looked up if the actual row name should be shown but can't figure it out.
+print(row.names(swiss[maxAgProvince,])) ## you needed to reference the dataframe again. rowname(33) provides nothing. (-5)
 
 #6
 cor(swiss)

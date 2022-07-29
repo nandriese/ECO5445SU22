@@ -4,24 +4,35 @@ Created on Thu Jul 14 11:54:57 2022
 
 @author: ni664326
 """
+###############################################################################
+# Copy header formatting from my scripts
+###############################################################################
 
 from tabulate import tabulate
 import os  # for setting up proper working directory
 import pandas as pd  # for reading and viewing data
 import matplotlib.pyplot as plt  # for visualizing data
-import seaborn as sns  # another way to view data
+#import seaborn as sns  # another way to view data
 import numpy as np  # to build arrays
 import scipy as sp  # for descriptive statistics
-import statsmodels.stats.weightstats as sm  # more descriptive statistics
+#import statsmodels.stats.weightstats as sm  # more descriptive statistics
 
+###############################################################################
+# Included packages that weren't needed
+###############################################################################
+
+###############################################################################
+# Also, be sure not to add things such as pip install within the python file
+# This will cause your file not to fully run and you'll have errors
+###############################################################################
 
 # 3 Read in data and change header names
 
 os.getcwd()
 git_path = 'C:\\Users\\ni664326\\OneDrive - Knights - University of Central Florida\\Classes\\Summer 2022\\Business Analytics - ECO 5445\\GitHub\\ECO5445\\'
-os.chdir(git_path + 'Project\\Data')
+git_path = 'C:/Users/jo585802/OneDrive - University of Central Florida/Documents/GitHub/ECO5445/' # Needed line to test data
+os.chdir(git_path + 'Project/Data')
 
-PrjData = pd.read_csv("hmda_sw.csv", header=0, names=colNames1, delimiter=",")
 
 colNames1 = ["SEQ", "LoanType", "LoanPurpose", "Occupancy",
              "LoanAmmount", "TypeAction", "MSAloc", "CountryLoc", "RaceAppl",
@@ -36,6 +47,17 @@ colNames1 = ["SEQ", "LoanType", "LoanPurpose", "Occupancy",
              "TypeProperty", "PMIsought", "PMIdenied", "Gift/GrantDP", "CoSign",
              "UnverifiableInfo", "#Reviewed", "netw", "uria", "rtdum", "bd", "mi",
              "old", "vr", "school", "chvalc", "dnotown", "dprop"]
+
+###############################################################################
+# Colnames must go before reading in file
+###############################################################################
+
+PrjData = pd.read_csv("hmda_sw.csv", header=0, names=colNames1, delimiter=",") 
+
+###############################################################################
+# The categorical variables are currently being treated as numeric. You cannot
+# do mean, sd, etc.
+###############################################################################
 
 PrjData.to_csv("PrjData.csv")
 summaryRace = PrjData.RaceAppl.describe()
@@ -55,23 +77,71 @@ myvariables = PrjData["TypeAction"], PrjData["RaceAppl"], PrjData["Debt/IncomeHo
     "TotalMonthlyIncomeApp"], PrjData["TotalMonthlyIncomeCoApp"], PrjData["ProposedMonthlyHouseExp"], PrjData["PurchasePrice"], PrjData["TermLoan"], PrjData["AppraisedValue"], PrjData["TypeProperty"], PrjData["OtherFinancing"], PrjData["LiquidAssets"], PrjData["CommercialCredit"], PrjData["AppHistoryGood"], PrjData["CreditLines"], PrjData["CH_mortgage"], PrjData["CH_consumer"], PrjData["CH_public"]
 # marital status needs to be recoded as integers, ran out of time PrjData["MaritalStatus"]
 
+###############################################################################
+# Why did you choose these variables in particular? What information from the
+# paper helped you decide?
+###############################################################################
+
+###############################################################################
+# Didn't happen to notice that 999,999.4 is the designation for missing 
+# numerical data. Summary statistics will be skewed.
+###############################################################################
 
 # 4 Summary statistics
 sp.stats.describe(PrjData[["TypeAction","RaceAppl", "Debt/IncomeHousing", "Debt/IncomeTotal", "SelfEmpApp", "school", "AppIncome", "LoanType", "LoanPurpose", "Occupancy", "LoanAmmount", "old", "netw", "PMIsought", "PMIdenied", "YearsAppLW", "YearsAppJob", "TotalMonthlyIncomeApp", "TotalMonthlyIncomeCoApp", "ProposedMonthlyHouseExp", "PurchasePrice", "TermLoan", "AppraisedValue", "TypeProperty", "OtherFinancing", "LiquidAssets", "CommercialCredit", "AppHistoryGood", "CreditLines", "CH_mortgage", "CH_consumer", "CH_public"]])
+
 PrjData.MaritalStatus.value_counts()
+
+###############################################################################
+# This is what you needed to do as well for other qualitative variables. 
+# Race isn't a number, it is a category.
+###############################################################################
+
+PrjData.RaceAppl.value_counts()
+
+###############################################################################
+# Brought in qualitative in with quantatitive varaibles. This correlation
+# is hard to read without labels on them.
+###############################################################################
+
 r = np.corrcoef(myvariables)
 print(r)
+
+
 sp.stats.describe(myvariables)
 
+
 PrjData.plot
+
 plt.hist(PrjData["RaceAppl"])
+###############################################################################
+# Histograms are not used for categorical data. Additionally, this chart would
+# be hard to understand if you do not know what 2 or 4 means.
+###############################################################################
+
+###############################################################################
+# These plots do not provide details about what we are plotting
+# They need context in order to understand.
+###############################################################################
 plt.hist(PrjData["Debt/IncomeTotal"])
 plt.scatter(PrjData["Debt/IncomeTotal"], PrjData["PurchasePrice"])
 PrjData[["RaceAppl", "TypeAction"]].groupby("RaceAppl").value_counts()
 PrjData[["RaceAppl", "SelfEmpApp"]].groupby("RaceAppl").value_counts()
+
+###############################################################################
+# What does all this mean for the representative applicant?
+# What does it mean about the sample?
+###############################################################################
+
 # 5 Baseline Probability of being approved for a mortgage
 
 PrjData.TypeAction.value_counts()
+
+###############################################################################
+# This next part requires you to look at a table, then manually input values.
+# We can extract values from the tables instead of hand typing them
+###############################################################################
+
 Approve = 2025+70
 Denied = 285
 TotalApplicants = Approve + Denied
@@ -79,18 +149,11 @@ ProbApprove = Approve/TotalApplicants
 print(ProbApprove)
 # 88% Approval rate
 
-# Tried the below but couldn't get it to work:
-Approve = 0
-Denied = 0
 
-if PrjData.TypeAction == 1 | 2:
-    Approve += 1
-Denied += 1
 ############################
 
 # 6 Table
 
-pip install tabulate
 
 
 PrjData[["RaceAppl", "TypeAction"]].groupby("RaceAppl").value_counts()
@@ -103,7 +166,12 @@ WhiteTot = WhiteApp + WhiteDeny
 TotApp = BlackApp + WhiteApp
 TotDeny = BlackDeny + WhiteDeny
 AllTotal = TotApp + TotDeny
+
 # not sure if there is a way to extract the value counts and save them into a variable rather than doing it manually
+
+###############################################################################
+# There is a way we can get around this by extracting values from tables
+###############################################################################
 
 table = [["Applicant Race", "Approved", "Not Approved", "Total"], ["Black", BlackApp, BlackDeny,
                                                                    BlackTot], ["White", WhiteApp, WhiteDeny, WhiteTot], ["Total", TotApp, TotDeny, AllTotal]]

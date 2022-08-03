@@ -1,0 +1,169 @@
+---
+title: "Assignment 7"
+author: "Nick Andriese"
+date: '2022-07-24'
+output: 
+  html_document:
+    toc: true
+    toc_float: true
+    number_sections: true
+---
+##Some of this is from my assignment 6 code
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r packages}
+
+#install.packages("car","gvlma", "MASS", "leaps")
+library(car)
+library(gvlma)
+library(MASS)
+library(leaps)
+```
+
+
+```{r}
+library(readr)
+prprice <- read_csv("prop_prices_reduced.csv")
+prprice$pool <- factor(prprice$pool)
+
+```
+
+```{r}
+#######
+####
+##
+#Conclusion, using boxcoxmodel
+boxcoxmodel <- lm((sale_def^(.22)) ~ bed + bath + (area_heated) + (area) + (dist_cbd) + pool, data = prprice[-c(7),])
+summary(boxcoxmodel)
+plot(boxcoxmodel)
+summary(gvlma(boxcoxmodel))
+### adj r^2 of .7843, hetero and link function satisfied, normality not satisfied even after using the boxcox transformation. 
+# After further study, violation of normality may not be significant if both linearity and homoskedasticity are present
+
+# this was HELL
+
+```
+
+# Prediction
+
+
+```{r}
+NewData <-data.frame("bed" = 2, "bath" =2, "area_heated" =1223, "area"=9750, "dist_cbd"=19368, "dist_lakes"=490, "pool"=factor(0))
+x <- predict(boxcoxmodel, NewData)
+
+PredictedCost <- (exp(1))^(log(x)/.22)
+print(PredictedCost)
+
+```
+
+
+##Start of Assignment 7
+
+```{r}
+#Assignment07 
+
+#1
+library(gamlr)
+library(pROC)
+library(rpart)
+library(rpart.plot)
+library(party)
+library(randomForest)
+library(e1071)
+class(p.train$pool)
+train <- sample(nrow(prprice[-c(7),]), 0.9*nrow(prprice[-c(7),]))
+p.train <- prprice[train,]
+p.train <- data.frame(p.train)
+p.validate <- prprice[-train,]
+describe(p.train)
+```
+
+
+```{r}
+#2
+
+train.model <- lm((sale_def^(.22)) ~ bed + bath + area_heated + area + dist_cbd + pool, data = p.train)
+summary(train.model)
+plot(train.model)
+summary(gvlma(train.model))
+```
+
+```{r}
+#Lasso
+
+sessionInfo()
+?gamlr
+data(p.train)
+p.train$pool <- as.numeric(p.train$pool) - 1
+x <- cbind(p.train$bed, p.train$bath, p.train$area_heated, p.train$area, p.train$dist_cbd, as.factor(p.train$pool))
+reg <- gamlr(x, p.train$sale_def^.22, verb = TRUE, standardization = TRUE)
+
+exp(coef(reg)[1])
+
+
+```
+
+
+```{r}
+#Lasso 10 fold cross validation
+
+cv.reg <- cv.gamlr(x, p.train$sale_def^.22, nfold = 10, verb = TRUE, standardization = TRUE)
+par(mfrow = c(1,1))
+plot(cv.reg)
+plot(cv.reg$gamlr)### this plot just seems so different from the example plot so I'm not sure what might be up.
+
+```
+
+```{r}
+#calculate RMSE for each lambda's selection method and the model in part w: AIC, BIC, AICc, cv.min, cv.1se
+
+log(reg$lambda[which.min(AICc(reg))])
+log(reg$lambda[which.min(AIC(reg))])
+log(reg$lambda[which.min(BIC(reg))])
+(cv.reg$lambda.min)
+(cv.reg$lambda.1se)
+
+
+
+log(cv.reg$gamlr$lambda)[which.min(AICc(cv.reg$gamlr))]#same as above
+log(cv.reg$gamlr$lambda)[which.min(AIC(cv.reg$gamlr))]#same as above
+log(cv.reg$gamlr$lambda)[which.min(BIC(cv.reg$gamlr))]#same as above
+
+
+
+AIC(x)
+
+#they are all the same... (besides the 1se). Not sure what this means and if its a red flag.
+```
+
+
+```{r}
+#plots
+
+plot(cv.reg)
+
+ll <- log(reg$lambda)
+plot(reg, col="grey")
+abline(v=ll[which.min(AICc(reg))], col="black", lty=2)
+abline(v=ll[which.min(AIC(reg))], col="orange", lty=2)
+abline(v=ll[which.min(BIC(reg))], col="green", lty=2)
+abline(v=log(cv.reg$lambda.min), col="blue", lty=2)
+abline(v=log(cv.reg$lambda.1se), col="purple", lty=2)
+legend("topright", bty="n", lwd=1, 
+       
+    col=c("black","orange","green","blue","purple"),
+    legend=c("AICc","AIC","BIC","CV.min","CV.1se"))
+
+
+
+#RMSE
+x1<- cbind(p.validate$bed, p.validate$bath, p.validate$area_heated, p.validate$area, p.validate$dist_cbd, as.factor(p.validate$pool))
+p.validate$modelpredict <- predict(train.model, p.validate)^(1/.22)
+
+p.validate$min_lam_predict <- predict(reg, x1, lambda = 0.01)
+```
+
+
+

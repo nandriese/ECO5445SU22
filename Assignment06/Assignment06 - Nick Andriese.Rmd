@@ -12,7 +12,7 @@ editor_options:
 ---
 
 ```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo = TRUE)
+knitr::opts_chunk$set(echo = TRUE,message = F,warning = F)
 ```
 
 ```{r packages}
@@ -63,34 +63,34 @@ prprice1 <- prprice
 
 #excess below
 
-plot(prprice$bed, prprice$sale_def)
-plot(prprice$bath, prprice$sale_def)
-plot(prprice$area_heated, prprice$sale_def)
-plot(prprice$area, prprice$sale_def)
-plot(prprice$dist_cbd, prprice$sale_def)
-plot(prprice$dist_lakes, prprice$sale_def)
-plot(prprice$pool, prprice$sale_def)
-plot(prprice$bed, prprice$bath)
-plot(prprice$bed, prprice$area_heated)
-plot(prprice$bed, prprice$area)
-plot(prprice$bed, prprice$dist_cbd)
-plot(prprice$bed, prprice$dist_lakes)
-plot(prprice$bed, prprice$pool)
-plot(prprice$bath, prprice$area_heated)
-plot(prprice$bath, prprice$area)
-plot(prprice$bath, prprice$dist_cbd)
-plot(prprice$bath, prprice$dist_lakes)
-plot(prprice$bath, prprice$pool)
-plot(prprice$pool, prprice$area_heated)
-plot(prprice$pool, prprice$area)
-plot(prprice$pool, prprice$dist_cbd)
-plot(prprice$pool, prprice$dist_lakes)
-plot(prprice$area_heated, prprice$area)
-plot(prprice$area_heated, prprice$dist_cbd)
-plot(prprice$area_heated, prprice$dist_lakes)
-plot(prprice$area, prprice$dist_cbd)
-plot(prprice$area, prprice$dist_lakes)
-plot(prprice$dist_cbd, prprice$dist_lakes)
+# plot(prprice$bed, prprice$sale_def)
+# plot(prprice$bath, prprice$sale_def)
+# plot(prprice$area_heated, prprice$sale_def)
+# plot(prprice$area, prprice$sale_def)
+# plot(prprice$dist_cbd, prprice$sale_def)
+# plot(prprice$dist_lakes, prprice$sale_def)
+# plot(prprice$pool, prprice$sale_def)
+# plot(prprice$bed, prprice$bath)
+# plot(prprice$bed, prprice$area_heated)
+# plot(prprice$bed, prprice$area)
+# plot(prprice$bed, prprice$dist_cbd)
+# plot(prprice$bed, prprice$dist_lakes)
+# plot(prprice$bed, prprice$pool)
+# plot(prprice$bath, prprice$area_heated)
+# plot(prprice$bath, prprice$area)
+# plot(prprice$bath, prprice$dist_cbd)
+# plot(prprice$bath, prprice$dist_lakes)
+# plot(prprice$bath, prprice$pool)
+# plot(prprice$pool, prprice$area_heated)
+# plot(prprice$pool, prprice$area)
+# plot(prprice$pool, prprice$dist_cbd)
+# plot(prprice$pool, prprice$dist_lakes)
+# plot(prprice$area_heated, prprice$area)
+# plot(prprice$area_heated, prprice$dist_cbd)
+# plot(prprice$area_heated, prprice$dist_lakes)
+# plot(prprice$area, prprice$dist_cbd)
+# plot(prprice$area, prprice$dist_lakes)
+# plot(prprice$dist_cbd, prprice$dist_lakes)
 ```
 
 # Summary Statistics
@@ -118,7 +118,7 @@ summary(model1)
 
 Which of the variables tested significant at the 95% level? Looking at the results and answering outside of the chunk is sufficient.
 
-***bed, bath, area_heated, area, dist_cbd all tested significant above the the 95% level
+***bed, bath, area_heated, area, dist_cbd all tested significant above the the 95% level***
 
 ## Evaluating the model
 
@@ -195,89 +195,93 @@ summary(model1)
 par(opar)
 ```
 
+`What about assumptions 1 and 2 (-10)`
+
 ## New Model
 
 Based off of your findings in the previous section, make changes to the variables, the functional form, etc.
 
 
-###will try multiple attempts to fix assumptions
+will try multiple attempts to fix assumptions
 
-#normal model
+### normal model
 model1 <- lm(sale_def ~., data = prprice)
 summary(model1)
 plot(model1)
 summary(gvlma(model1))
-### adjusted r^2 = .5438, no assumption satisfied on gvlma, dist_lake not significant, outliers of 7 and 37
 
-#
+adjusted r^2 = .5438, no assumption satisfied on gvlma, dist_lake not significant, outliers of 7 and 37
 
-#model without dist_lake
+###model without dist_lake
 nolakemodel <- lm(sale_def ~ bed + bath + area + area_heated + dist_cbd + pool, data = prprice)
 summary(nolakemodel)
 plot(nolakemodel)
 summary(gvlma(nolakemodel))
-###adjusted r^2 = .5443, no assumptions satisfied
 
-#
+adjusted r^2 = .5443, no assumptions satisfied
 
-#model with dist_lake and outliers removed
+### model with dist_lake and outliers removed
 
 nolakemodel1 <- lm(sale_def ~ bed + bath + area + area_heated + dist_cbd + pool, data = prprice[-c(7,37),])
 summary(nolakemodel1)
 plot(nolakemodel1)
+
 summary(gvlma(nolakemodel1))
+
 ### adjusted r^2 = .6894, pool teetering on significance, only heteroskedasticity is acceptable on gvlma
 
-#
+### log of y
 
-#log of y
 logmodel <- lm(log(sale_def) ~ bed + bath + area + area_heated + dist_cbd + pool, data = prprice)
 summary(logmodel)
 plot(logmodel)
 summary(gvlma(logmodel))
-###adjusted r^2 = .7393, all significant, only heteroskedasticity is acceptable on gvlma
 
-#
+adjusted r^2 = .7393, all significant, only heteroskedasticity is acceptable on gvlma
 
-#sqrt of y
+### sqrt of y
 sqrtmodel <- lm(sqrt(sale_def) ~ bed + bath + area + area_heated + dist_cbd + pool, data = prprice[-c(7),])
 summary(sqrtmodel)
 plot(sqrtmodel)
 summary(gvlma(sqrtmodel))
-###no assumptions satisfied but adjusted r^2 = .7895
 
-#
+no assumptions satisfied but adjusted r^2 = .7895
 
-#combine sales and area
+### combine sales and area
+
 SAmodel <- lm((sale_def/area) ~ bed + bath + area_heated + dist_cbd + dist_lakes + pool, data = prprice)
 summary(SAmodel)
 plot(SAmodel)
 summary(gvlma(SAmodel))
-###homoskedastic and link function satisfied, however adj r^2 = .2698, dist_cbd and pool not significant.
 
-# log combined sales and area y
+homoskedastic and link function satisfied, however adj r^2 = .2698, dist_cbd and pool not significant.
+
+### log combined sales and area y
 logSAmodel <- lm(log(sale_def/area) ~ bed + bath + area_heated + dist_cbd + (dist_lakes) + pool, data = prprice)
 summary(logSAmodel)
 plot(logSAmodel)
 summary(gvlma(logSAmodel))
-### adj r^2 = .2467, heteroskedasticity sat, dist_cbd and pool not significant
+
+adj r^2 = .2467, heteroskedasticity sat, dist_cbd and pool not significant
 
 
-#log combined sales and area, log all IVs
+### log combined sales and area, log all IVs
 logSAallmodel <- lm(log(sale_def/area) ~ log(bed) + log(bath) + log(area_heated) + log(dist_cbd) + log(dist_lakes) + (pool), data = prprice)
 summary(logSAallmodel)
 plot(logSAallmodel)
 summary(gvlma(logSAallmodel))
-### adj r^2 = .2704, pool not significant (not logged), heterosked and link function satisfied.
 
-#sqrt combined sales and area
+adj r^2 = .2704, pool not significant (not logged), heterosked and link function satisfied.
+
+### sqrt combined sales and area
 sqrtSAmodel <- lm(sqrt(sale_def/area) ~ bed + bath + area_heated + dist_cbd + (dist_lakes) + pool, data = prprice)
 summary(sqrtSAmodel)
 plot(sqrtSAmodel)
 summary(gvlma(sqrtSAmodel))
-### adj r^2 = .2697, dist_cbd and pool not significant, only heteroskedasticity satisfied
 
-#boxcox-transformation
+adj r^2 = .2697, dist_cbd and pool not significant, only heteroskedasticity satisfied
+
+### boxcox-transformation
 powermodel <- lm((sale_def^(-.33)) ~ bath + area_heated + dist_cbd + pool, data = prprice[-c(37,329),])
 summary(powermodel)
 plot(powermodel)
@@ -347,7 +351,8 @@ prprice1$sqrtbath <- (sqrt(prprice$bath))
 hist(prprice1$sqrtbath)
 describe(prprice1)
 describe(prprice)
-#^^^^ this was for me to check kurtosis and skew, etc.
+
+^^^^ this was for me to check kurtosis and skew, etc.
 #################
 
 
@@ -378,7 +383,8 @@ summary(gvlma(boxcoxmodel))
 ### adj r^2 of .7843, hetero and link function satisfied, normality not satisfied even after using the boxcox transformation. 
 # After further study, violation of normality may not be significant if both linearity and homoskedasticity are present
 
-# this was HELL
+# this was HELL 
+# did you mean FUN?
 
 ```
 

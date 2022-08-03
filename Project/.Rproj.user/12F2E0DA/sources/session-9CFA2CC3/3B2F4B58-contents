@@ -327,14 +327,57 @@ performance(logit.perf3) # 0.90
 
 ## 10 Fold Cross Validation
 
+### Regularization and Cross Validation
+
 ```{r}
+library(gamlr)
+x <- as.matrix(hd[,-1]) # tried just hd[,-1], and cbind(hd[,-1]) and both don't work
+y <- hd$TypeAction
+hd.reg <- gamlr(x, y, verb = TRUE, family = "binomial", standardize = TRUE, na.omit = TRUE) #I'm confused of how to set this up... getting an error
+
+opar <- par
+par(mfrow(1,2))
+plot(hd.reg)
+plot(hd.reg$gamlr)
+
+hd.reg.cv <- cv.gamlr(x, y, verb = TRUE, family = "binomial", standardize = TRUE, na.omit = TRUE)
+
+plot(hd.reg.cv)
+plot(hd.reg.cv$gamlr)
+```
+
+### Model Estimates
+
+```{r}
+log(hd.reg$lambda[which.min(AICc(hd))])
+log(hd.reg$lambda[which.min(AIC(hd))])
+log(hd.reg$lambda[which.min(BIC(hd))])
+log(hd.reg.cv$lambda.min)
+log(hd.reg.cv$lambda.1se)
+
+
+ll <- log(hd.reg$lambda) ## the sequence of lambdas
+n <- nrow(y)
+par(mfrow=c(1,2))
+plot(hd.reg.cv)
+plot(ll, AIC(hd.reg)/n, 
+    xlab="log lambda", ylab="IC/n", pch=21, bg="orange", ylim = c(1.15,1.5))
+abline(v=ll[which.min(AIC(hd.reg))], col="orange", lty=3)
+abline(v=ll[which.min(BIC(hd.reg))], col="green", lty=3)
+abline(v=ll[which.min(AICc(hd.reg))], col="black", lty=3)
+points(ll, BIC(hd.reg)/n, pch=21, bg="green")
+points(ll, AICc(hd.reg)/n, pch=21, bg="black")
+legend("topleft", bty="n",
+    fill=c("black","orange","green"),legend=c("AICc","AIC","BIC"))
+
 
 ```
 
-## Performance Table
+### Performance Tables
 
 ```{r}
-
+performance(hd.reg)
+performance(hd.reg.cv)
 
 ```
 

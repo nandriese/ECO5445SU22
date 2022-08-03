@@ -1662,13 +1662,8 @@ levels(hd$CH_consumer) &lt;- c(&quot;no slow pay or delinquent accounts, but suf
 
 hd$CH_public &lt;- as.factor(hd$CH_public)
 levels(hd$CH_public) &lt;- c(&quot;Info not included or no public record defaults&quot;, &quot;Bankruptcy or defaults&quot;) #there are multiple 0 and 1&#39;s with different labels - can&#39;t change now because we don&#39;t know which 0&#39;s and 1&#39;s are which, therefore all 0&#39;s will be 0 and all 1&#39;s will be 1.
-table(hd$CH_public)</code></pre>
-<pre><code>## 
-## Info not included or no public record defaults 
-##                                           2205 
-##                         Bankruptcy or defaults 
-##                                            175</code></pre>
-<pre class="r"><code>hd$F_or_A_loan &lt;- as.factor(hd$F_or_A_loan)
+
+hd$F_or_A_loan &lt;- as.factor(hd$F_or_A_loan)
 levels(hd$F_or_A_loan) &lt;- c(&quot;Adjustable&quot;, &quot;Fixed&quot;, &quot;Not&quot;)
 
 hd$PMIsought &lt;- as.factor(hd$PMIsought)
@@ -1712,8 +1707,9 @@ levels(hd$dnotown) &lt;- c(&quot;Owner Occupied&quot;, &quot;Not owner occupied,
 <h2><span class="header-section-number">2.1</span> Summary
 Statistics</h2>
 <pre class="r"><code>library(skimr)
-library(gtsummary)
-library(gapminder)
+library(gtsummary)</code></pre>
+<pre><code>## #BlackLivesMatter</code></pre>
+<pre class="r"><code>library(gapminder)
 library(vtable)</code></pre>
 <pre><code>## Loading required package: kableExtra</code></pre>
 <pre><code>## 
@@ -1886,7 +1882,7 @@ library(vtable)</code></pre>
 ##  3rd Qu.: 270.577  
 ##  Max.   :1233.333  
 ##  NA&#39;s   :16</code></pre>
-<pre class="r"><code>skim(hd)</code></pre>
+<pre class="r"><code>skim(hd)  #these are different ways I looked up</code></pre>
 <table style="width: auto;" class="table table-condensed">
 <caption>
 Data summary
@@ -3163,12 +3159,12 @@ chvalc
 </tbody>
 </table>
 <pre class="r"><code>bold_labels(tbl_summary(hd))</code></pre>
-<div id="jozzuiytcz" style="overflow-x:auto;overflow-y:auto;width:auto;height:auto;">
+<div id="kmmabhcpcm" style="overflow-x:auto;overflow-y:auto;width:auto;height:auto;">
 <style>html {
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Helvetica Neue', 'Fira Sans', 'Droid Sans', Arial, sans-serif;
 }
 
-#jozzuiytcz .gt_table {
+#kmmabhcpcm .gt_table {
   display: table;
   border-collapse: collapse;
   margin-left: auto;
@@ -3193,7 +3189,7 @@ chvalc
   border-left-color: #D3D3D3;
 }
 
-#jozzuiytcz .gt_heading {
+#kmmabhcpcm .gt_heading {
   background-color: #FFFFFF;
   text-align: center;
   border-bottom-color: #FFFFFF;
@@ -3205,7 +3201,7 @@ chvalc
   border-right-color: #D3D3D3;
 }
 
-#jozzuiytcz .gt_title {
+#kmmabhcpcm .gt_title {
   color: #333333;
   font-size: 125%;
   font-weight: initial;
@@ -3217,7 +3213,7 @@ chvalc
   border-bottom-width: 0;
 }
 
-#jozzuiytcz .gt_subtitle {
+#kmmabhcpcm .gt_subtitle {
   color: #333333;
   font-size: 85%;
   font-weight: initial;
@@ -3229,13 +3225,13 @@ chvalc
   border-top-width: 0;
 }
 
-#jozzuiytcz .gt_bottom_border {
+#kmmabhcpcm .gt_bottom_border {
   border-bottom-style: solid;
   border-bottom-width: 2px;
   border-bottom-color: #D3D3D3;
 }
 
-#jozzuiytcz .gt_col_headings {
+#kmmabhcpcm .gt_col_headings {
   border-top-style: solid;
   border-top-width: 2px;
   border-top-color: #D3D3D3;
@@ -3250,7 +3246,7 @@ chvalc
   border-right-color: #D3D3D3;
 }
 
-#jozzuiytcz .gt_col_heading {
+#kmmabhcpcm .gt_col_heading {
   color: #333333;
   background-color: #FFFFFF;
   font-size: 100%;
@@ -3270,7 +3266,7 @@ chvalc
   overflow-x: hidden;
 }
 
-#jozzuiytcz .gt_column_spanner_outer {
+#kmmabhcpcm .gt_column_spanner_outer {
   color: #333333;
   background-color: #FFFFFF;
   font-size: 100%;
@@ -3282,15 +3278,15 @@ chvalc
   padding-right: 4px;
 }
 
-#jozzuiytcz .gt_column_spanner_outer:first-child {
+#kmmabhcpcm .gt_column_spanner_outer:first-child {
   padding-left: 0;
 }
 
-#jozzuiytcz .gt_column_spanner_outer:last-child {
+#kmmabhcpcm .gt_column_spanner_outer:last-child {
   padding-right: 0;
 }
 
-#jozzuiytcz .gt_column_spanner {
+#kmmabhcpcm .gt_column_spanner {
   border-bottom-style: solid;
   border-bottom-width: 2px;
   border-bottom-color: #D3D3D3;
@@ -3302,7 +3298,7 @@ chvalc
   width: 100%;
 }
 
-#jozzuiytcz .gt_group_heading {
+#kmmabhcpcm .gt_group_heading {
   padding-top: 8px;
   padding-bottom: 8px;
   padding-left: 5px;
@@ -3327,7 +3323,7 @@ chvalc
   vertical-align: middle;
 }
 
-#jozzuiytcz .gt_empty_group_heading {
+#kmmabhcpcm .gt_empty_group_heading {
   padding: 0.5px;
   color: #333333;
   background-color: #FFFFFF;
@@ -3342,15 +3338,15 @@ chvalc
   vertical-align: middle;
 }
 
-#jozzuiytcz .gt_from_md > :first-child {
+#kmmabhcpcm .gt_from_md > :first-child {
   margin-top: 0;
 }
 
-#jozzuiytcz .gt_from_md > :last-child {
+#kmmabhcpcm .gt_from_md > :last-child {
   margin-bottom: 0;
 }
 
-#jozzuiytcz .gt_row {
+#kmmabhcpcm .gt_row {
   padding-top: 8px;
   padding-bottom: 8px;
   padding-left: 5px;
@@ -3369,7 +3365,7 @@ chvalc
   overflow-x: hidden;
 }
 
-#jozzuiytcz .gt_stub {
+#kmmabhcpcm .gt_stub {
   color: #333333;
   background-color: #FFFFFF;
   font-size: 100%;
@@ -3382,7 +3378,7 @@ chvalc
   padding-right: 5px;
 }
 
-#jozzuiytcz .gt_stub_row_group {
+#kmmabhcpcm .gt_stub_row_group {
   color: #333333;
   background-color: #FFFFFF;
   font-size: 100%;
@@ -3396,11 +3392,11 @@ chvalc
   vertical-align: top;
 }
 
-#jozzuiytcz .gt_row_group_first td {
+#kmmabhcpcm .gt_row_group_first td {
   border-top-width: 2px;
 }
 
-#jozzuiytcz .gt_summary_row {
+#kmmabhcpcm .gt_summary_row {
   color: #333333;
   background-color: #FFFFFF;
   text-transform: inherit;
@@ -3410,16 +3406,16 @@ chvalc
   padding-right: 5px;
 }
 
-#jozzuiytcz .gt_first_summary_row {
+#kmmabhcpcm .gt_first_summary_row {
   border-top-style: solid;
   border-top-color: #D3D3D3;
 }
 
-#jozzuiytcz .gt_first_summary_row.thick {
+#kmmabhcpcm .gt_first_summary_row.thick {
   border-top-width: 2px;
 }
 
-#jozzuiytcz .gt_last_summary_row {
+#kmmabhcpcm .gt_last_summary_row {
   padding-top: 8px;
   padding-bottom: 8px;
   padding-left: 5px;
@@ -3429,7 +3425,7 @@ chvalc
   border-bottom-color: #D3D3D3;
 }
 
-#jozzuiytcz .gt_grand_summary_row {
+#kmmabhcpcm .gt_grand_summary_row {
   color: #333333;
   background-color: #FFFFFF;
   text-transform: inherit;
@@ -3439,7 +3435,7 @@ chvalc
   padding-right: 5px;
 }
 
-#jozzuiytcz .gt_first_grand_summary_row {
+#kmmabhcpcm .gt_first_grand_summary_row {
   padding-top: 8px;
   padding-bottom: 8px;
   padding-left: 5px;
@@ -3449,11 +3445,11 @@ chvalc
   border-top-color: #D3D3D3;
 }
 
-#jozzuiytcz .gt_striped {
+#kmmabhcpcm .gt_striped {
   background-color: rgba(128, 128, 128, 0.05);
 }
 
-#jozzuiytcz .gt_table_body {
+#kmmabhcpcm .gt_table_body {
   border-top-style: solid;
   border-top-width: 2px;
   border-top-color: #D3D3D3;
@@ -3462,7 +3458,7 @@ chvalc
   border-bottom-color: #D3D3D3;
 }
 
-#jozzuiytcz .gt_footnotes {
+#kmmabhcpcm .gt_footnotes {
   color: #333333;
   background-color: #FFFFFF;
   border-bottom-style: none;
@@ -3476,7 +3472,7 @@ chvalc
   border-right-color: #D3D3D3;
 }
 
-#jozzuiytcz .gt_footnote {
+#kmmabhcpcm .gt_footnote {
   margin: 0px;
   font-size: 90%;
   padding-left: 4px;
@@ -3485,7 +3481,7 @@ chvalc
   padding-right: 5px;
 }
 
-#jozzuiytcz .gt_sourcenotes {
+#kmmabhcpcm .gt_sourcenotes {
   color: #333333;
   background-color: #FFFFFF;
   border-bottom-style: none;
@@ -3499,7 +3495,7 @@ chvalc
   border-right-color: #D3D3D3;
 }
 
-#jozzuiytcz .gt_sourcenote {
+#kmmabhcpcm .gt_sourcenote {
   font-size: 90%;
   padding-top: 4px;
   padding-bottom: 4px;
@@ -3507,36 +3503,36 @@ chvalc
   padding-right: 5px;
 }
 
-#jozzuiytcz .gt_left {
+#kmmabhcpcm .gt_left {
   text-align: left;
 }
 
-#jozzuiytcz .gt_center {
+#kmmabhcpcm .gt_center {
   text-align: center;
 }
 
-#jozzuiytcz .gt_right {
+#kmmabhcpcm .gt_right {
   text-align: right;
   font-variant-numeric: tabular-nums;
 }
 
-#jozzuiytcz .gt_font_normal {
+#kmmabhcpcm .gt_font_normal {
   font-weight: normal;
 }
 
-#jozzuiytcz .gt_font_bold {
+#kmmabhcpcm .gt_font_bold {
   font-weight: bold;
 }
 
-#jozzuiytcz .gt_font_italic {
+#kmmabhcpcm .gt_font_italic {
   font-style: italic;
 }
 
-#jozzuiytcz .gt_super {
+#kmmabhcpcm .gt_super {
   font-size: 65%;
 }
 
-#jozzuiytcz .gt_two_val_uncert {
+#kmmabhcpcm .gt_two_val_uncert {
   display: inline-block;
   line-height: 1em;
   text-align: right;
@@ -3545,31 +3541,31 @@ chvalc
   margin-left: 0.1em;
 }
 
-#jozzuiytcz .gt_footnote_marks {
+#kmmabhcpcm .gt_footnote_marks {
   font-style: italic;
   font-weight: normal;
   font-size: 75%;
   vertical-align: 0.4em;
 }
 
-#jozzuiytcz .gt_asterisk {
+#kmmabhcpcm .gt_asterisk {
   font-size: 100%;
   vertical-align: 0;
 }
 
-#jozzuiytcz .gt_slash_mark {
+#kmmabhcpcm .gt_slash_mark {
   font-size: 0.7em;
   line-height: 0.7em;
   vertical-align: 0.15em;
 }
 
-#jozzuiytcz .gt_fraction_numerator {
+#kmmabhcpcm .gt_fraction_numerator {
   font-size: 0.6em;
   line-height: 0.6em;
   vertical-align: 0.45em;
 }
 
-#jozzuiytcz .gt_fraction_denominator {
+#kmmabhcpcm .gt_fraction_denominator {
   font-size: 0.6em;
   line-height: 0.6em;
   vertical-align: -0.05em;
@@ -3972,7 +3968,7 @@ chvalc
           valid.col    = FALSE)) # would this suffice for everything? I&#39;m trying to make it look nice after knitting</code></pre>
 <pre><code>## text graphs are displayed; set &#39;tmp.img.dir&#39; parameter to activate png graphs</code></pre>
 <pre><code>## Switching method to &#39;browser&#39;</code></pre>
-<pre><code>## Output file written: C:\Users\ni664326\AppData\Local\Temp\RtmpOmlQRz\file45fc50e41198.html</code></pre>
+<pre><code>## Output file written: C:\Users\ni664326\AppData\Local\Temp\RtmpUDQaT7\file4c0c59b73e57.html</code></pre>
 <pre class="r"><code>#view(dfSummary(hd))
 
 
@@ -3985,8 +3981,28 @@ chvalc
 </div>
 <div id="sample-summary" class="section level2" number="2.2">
 <h2><span class="header-section-number">2.2</span> Sample Summary</h2>
-<p>The sample consisted of 2380 subjects, 14.2% were Black and 85.8%
-were White. ______</p>
+<p>The sample consisted of 2380 subjects: 78.4% were male, 20.8% were
+female and 0.8% did not provide information on gender; 14.2% were Black
+and 85.8% were White; 60.7% were married, 3.1% were single, divorced or
+widowed, and 36.2% were separated; 11.6% were self employed; 82.6% lived
+in Suffolk county; 33.1% took out Adjustable-rate loans and 66.7%
+Fixed-rate loans; 22.6% sought out Private Mortgage Insurance and 2% of
+those who sought out Private Mortgage Insurance were denied; 96.6%
+occupied the house they owned; 91.2% had credit histories that met loan
+policy guidelines for approval; 16.8% received gifts or grant money used
+to pay for the house; 2.8% had a cosigner on the mortgage; 54% had an
+age greater than the MSA median; 88% had their loan approved.</p>
+<p>The following outlines the means of the sample on several relevant
+variables:Average Debt/Income Total was 33.1; average years of education
+was 15.5; average Loan Amount was $139,100; average Purchase Price was
+$189,900; average Appraised Value of the homes were $198,500; average
+Loan Term was 342.5 months (28.5 years); average years employed in
+applicable line of work was 10.6; average years employed on applicable
+job was 6.5; average net worth was $253,000; average amount of liquid
+assets was $93,100; average monthly income of the applicant was $4,914;
+average monthly income of coapplicant was $1,442; average number of
+dependents claimed was 0.8.</p>
+<p>*See the print out for all other summary statistics.</p>
 </div>
 </div>
 <div id="part-c" class="section level1" number="3">
@@ -4528,37 +4544,41 @@ performance &lt;- function(table, n = 4){
   cat(result)
 }
 
-performance(logit.perf) #.50</code></pre>
+performance(logit.perf) # 0.50</code></pre>
 <pre><code>## Sensitivity = 0.9357
 ## Specificity = 0.8611
 ## Positive Predictive Value = 0.3922
 ## Negative Predictive Value = 0.8611
 ## Accuracy = 0.8676</code></pre>
-<pre class="r"><code>performance(logit.perf.thresh) #.105</code></pre>
+<pre class="r"><code>performance(logit.perf.thresh) # 0.105</code></pre>
 <pre><code>## Sensitivity = 0.8947
 ## Specificity = 0.9294
 ## Positive Predictive Value = 0.5484
 ## Negative Predictive Value = 0.9294
 ## Accuracy = 0.9264</code></pre>
-<pre class="r"><code>performance(logit.perf1) #.75</code></pre>
+<pre class="r"><code>performance(logit.perf1) # 0.75</code></pre>
 <pre><code>## Sensitivity = 0.5497
 ## Specificity = 0.995
 ## Positive Predictive Value = 0.9126
 ## Negative Predictive Value = 0.995
 ## Accuracy = 0.956</code></pre>
-<pre class="r"><code>performance(logit.perf2) #.05</code></pre>
+<pre class="r"><code>performance(logit.perf2) # 0.05</code></pre>
 <pre><code>## Sensitivity = 0.9357
 ## Specificity = 0.8611
 ## Positive Predictive Value = 0.3922
 ## Negative Predictive Value = 0.8611
 ## Accuracy = 0.8676</code></pre>
-<pre class="r"><code>performance(logit.perf3) #.90</code></pre>
+<pre class="r"><code>performance(logit.perf3) # 0.90</code></pre>
 <pre><code>## Sensitivity = 0.4152
 ## Specificity = 0.9983
 ## Positive Predictive Value = 0.9595
 ## Negative Predictive Value = 0.9983
 ## Accuracy = 0.9473</code></pre>
-<p>Write up here</p>
+</div>
+<div id="summary-of-findings" class="section level2" number="3.5">
+<h2><span class="header-section-number">3.5</span> Summary of
+Findings</h2>
+<p>****Write up here</p>
 </div>
 </div>
 <div id="part-d" class="section level1" number="4">
@@ -4566,10 +4586,39 @@ performance(logit.perf) #.50</code></pre>
 <div id="fold-cross-validation" class="section level2" number="4.1">
 <h2><span class="header-section-number">4.1</span> 10 Fold Cross
 Validation</h2>
+<div id="regularization-and-cross-validation" class="section level3" number="4.1.1">
+<h3><span class="header-section-number">4.1.1</span> Regularization and
+Cross Validation</h3>
+<pre class="r"><code>library(gamlr)</code></pre>
+<pre><code>## Loading required package: Matrix</code></pre>
+<pre><code>## 
+## Attaching package: &#39;Matrix&#39;</code></pre>
+<pre><code>## The following objects are masked from &#39;package:tidyr&#39;:
+## 
+##     expand, pack, unpack</code></pre>
+<pre class="r"><code>x &lt;- as.matrix(hd[,-1]) # tried just hd[,-1], and cbind(hd[,-1]) and both don&#39;t work
+y &lt;- hd$TypeAction
+#hd.reg &lt;- gamlr(x, y, verb = TRUE, family = &quot;binomial&quot;, standardize = TRUE, na.omit = TRUE) #I&#39;m confused of how to set this up... getting an error
+
+opar &lt;- par
+#par(mfrow(1,2))
+#plot(hd.reg)
+#plot(hd.reg$gamlr)
+
+#hd.reg.cv &lt;- cv.gamlr(x, y, verb = TRUE, family = &quot;binomial&quot;, standardize = TRUE, na.omit = TRUE)
+
+#plot(hd.reg.cv)
+#plot(hd.reg.cv$gamlr)</code></pre>
 </div>
-<div id="performance-table" class="section level2" number="4.2">
-<h2><span class="header-section-number">4.2</span> Performance
-Table</h2>
+<div id="model-estimates" class="section level3" number="4.1.2">
+<h3><span class="header-section-number">4.1.2</span> Model
+Estimates</h3>
+<pre class="r"><code>##log(hd.reg$lambda[which.min(AICc(hd))])
+#log(hd.reg$lambda[which.min(AIC(hd))])
+#log(hd.reg$lambda[which.min(BIC(hd))])
+#log(hd.reg.cv$lambda.min)
+##log(hd.reg.cv$lambda.1se)</code></pre>
+</div>
 </div>
 </div>
 <div id="part-e" class="section level1" number="5">

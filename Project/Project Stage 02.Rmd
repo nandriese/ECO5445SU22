@@ -237,10 +237,6 @@ logit.perf
 ```{r}
 my_roc <- roc(hd$TypeAction ~ prob.dh, plot = TRUE)
 
-coords(my_roc, "best", ret = "threshold")
-
-threshold <- my_roc$thresholds[which.max(my_roc$sensitivities + my_roc$specificities)]
-
 auc(my_roc)
 ```
 
@@ -249,6 +245,11 @@ auc(my_roc)
 ### Threshold Cut off (.1059946)
 
 ```{r}
+# Finds Optimal threshold
+coords(my_roc, "best", ret = "threshold")
+
+threshold <- my_roc$thresholds[which.max(my_roc$sensitivities + my_roc$specificities)]
+
 threshold 
 
 logit.pred.thresh <- factor(prob.dh > threshold, levels = c(FALSE, TRUE),labels = c("Loan Approved", "Loan Denied")) #why would I get NA's here and how can I get rid of them?
@@ -324,7 +325,7 @@ performance(logit.perf3) # 0.90
 
 ## Summary of Findings
 
-****Write up here
+After performing a logitic regression with all of the variables
 
 
 # Part D

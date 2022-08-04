@@ -38,6 +38,7 @@ colnames(hdata) <- (c("SEQ", "LoanType", "LoanPurpose", "Occupancy","LoanAmmount
 
 hdata[hdata == 999999.4] <- NA  
 hdata[hdata == 999999] <- NA
+na.omit(hdata)
 
 ```
 
@@ -161,9 +162,6 @@ levels(hd$vr) <- c("≤ MSA median", "> MSA median")
 hd$dnotown <- as.factor(hd$dnotown)
 levels(hd$dnotown) <- c("Owner Occupied", "Not owner occupied, or information not available")
 
-#hd <- hd[!is.na(hd)]
-
-
 ```
 
 # Part B
@@ -178,9 +176,9 @@ library(gapminder)
 library(vtable)
 library(psych)
 library(summarytools)
-summary(hd) ###is there a better way to do this?
-#skim(hd)  #these are different ways I looked up
-bold_labels(tbl_summary(hd))
+#summary(hd) ###is there a better way to do this?
+skim(hd)  #these are different ways I looked up
+#bold_labels(tbl_summary(hd))
 #describe(hd)
 stview(dfSummary(hd,
           plain.ascii  = FALSE, 
@@ -199,6 +197,17 @@ stview(dfSummary(hd,
 #install.packages("summarytools")
 
 ```
+
+## plots
+```{r}
+#do correlations, scatterplots for the variables that he suggested.
+```
+
+## Transformation
+```{r}
+#pick a few that look like they could be transformed.
+```
+
 
 ## Sample Summary
 
@@ -223,18 +232,20 @@ library(e1071)
 na.omit(hd)
 
 fit.hd <- glm(TypeAction ~ ., data = hd, family = "binomial")
-
-#fit.hd.reduced <- step(fit.hd) don't think i need this. yet...
-
 summary(fit.hd)
 
 prob.dh <-predict(fit.hd, hd, type = "response", na.omit = TRUE)
 
-logit.pred <- factor(prob.dh > .05, levels = c(FALSE, TRUE),labels = c("Loan Approved", "Loan Denied")) #why would I get NA's here and how can I get rid of them?******
+logit.pred <- factor(prob.dh > .05, levels = c(FALSE, TRUE),labels = c("Loan Approved", "Loan Denied")) #why would I get NA's here and how can I get rid of them?
 
 logit.perf <-  table(hd$TypeAction, logit.pred, dnn = c("Actual", "Predicted"))
 
 logit.perf
+
+install.packages("jtools")
+library(jtools)
+#
+summ
 ```
 
 ## ROC Curve and AUC
@@ -250,7 +261,7 @@ auc(my_roc)
 ### Threshold Cut off (.1059946)
 
 ```{r}
-# Finds Optimal threshold that maximizes specificity and sensitivity
+# Finds Optimal threshold
 coords(my_roc, "best", ret = "threshold")
 
 threshold <- my_roc$thresholds[which.max(my_roc$sensitivities + my_roc$specificities)]
@@ -326,14 +337,11 @@ performance(logit.perf2) # 0.05
 
 performance(logit.perf3) # 0.90
 
-exp(coef(fit.hd))
-
-
 ```
 
 ## Summary of Findings
 
-5 logitic regressions with Loan Approval/Denial as the outcome variable and all other variables of predictor variables were conducted with different 
+After performing a logitic regression with all of the variables
 
 
 # Part D
@@ -343,31 +351,28 @@ exp(coef(fit.hd))
 ### Regularization and Cross Validation
 
 ```{r}
+# do a cross
+install.packages("boot")
+library(boot)
+
+# will not h
+
+# can put in SVM,TREE, random forrest, for extra credit.
+
 library(gamlr)
 x <- as.matrix(hd[,-1]) # tried just hd[,-1], and cbind(hd[,-1]) and both don't work
 y <- hd$TypeAction
+hd.reg <- gamlr(x, y, verb = TRUE, family = "binomial", standardize = TRUE, na.omit = TRUE) #I'm confused of how to set this up... getting an error
 
-hd.reg.cv <- cv.gamlr(x, y, verb = TRUE, family = "binomial", standardize = TRUE, na. = TRUE)
+opar <- par
+par(mfrow(1,2))
+plot(hd.reg)
+plot(hd.reg$gamlr)
+
+hd.reg.cv <- cv.gamlr(x, y, verb = TRUE, family = "binomial", standardize = TRUE, na.omit = TRUE)
 
 plot(hd.reg.cv)
 plot(hd.reg.cv$gamlr)
-
-###### glmnet
-
-#install.packages("glmnet", repos = "https://cran.us.r-project.org")
-
-library(glmnet)
-x <- makeX(hd[,-1], na.omit = TRUE)
-
-hd.reg1.cv <- cv.glmnet(x, y, family = "binomial", standardize = TRUE)
-plot(hd.reg1.cv)
-
-hd.reg1$lambda[which.min(AICc(hd.reg1))]
-hd.reg1$lambda[which.min(AIC(hd.reg1))]
-hd.reg1$lambda[which.min(BIC(hd.reg1))]
-hd.reg1$lambda[which.min(AICc(hd.reg1))]
-hd.reg1.cv$lambda.min
-hd.reg1.cv$lambda.1se
 ```
 
 ### Model Estimates
@@ -380,20 +385,20 @@ log(hd.reg.cv$lambda.min)
 log(hd.reg.cv$lambda.1se)
 
 
-ll <- log(hd.reg1$lambda) ## the sequence of lambdas
+ll <- log(hd.reg$lambda) ## the sequence of lambdas
 n <- nrow(y)
 par(mfrow=c(1,2))
-plot(hd.reg1.cv)
-plot(ll, AIC(hd.reg1)/n, 
+plot(hd.reg.cv)
+plot(ll, AIC(hd.reg)/n, 
     xlab="log lambda", ylab="IC/n", pch=21, bg="orange", ylim = c(1.15,1.5))
-abline(v=ll[which.min(AIC(hd.reg1))], col="orange", lty=3)
-abline(v=ll[which.min(BIC(hd.reg1))], col="green", lty=3)
-abline(v=ll[which.min(AICc(hd.reg1))], col="black", lty=3)
-points(ll, BIC(hd.reg1)/n, pch=21, bg="green")
-points(ll, AICc(hd.reg1)/n, pch=21, bg="black")
+abline(v=ll[which.min(AIC(hd.reg))], col="orange", lty=3)
+abline(v=ll[which.min(BIC(hd.reg))], col="green", lty=3)
+abline(v=ll[which.min(AICc(hd.reg))], col="black", lty=3)
+points(ll, BIC(hd.reg)/n, pch=21, bg="green")
+points(ll, AICc(hd.reg)/n, pch=21, bg="black")
 legend("topleft", bty="n",
     fill=c("black","orange","green"),legend=c("AICc","AIC","BIC"))
-opar
+
 
 ```
 

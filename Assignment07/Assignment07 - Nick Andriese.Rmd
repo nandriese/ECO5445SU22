@@ -22,48 +22,16 @@ library(car)
 library(gvlma)
 library(MASS)
 library(leaps)
-```
-
-
-```{r}
 library(readr)
 prprice <- read_csv("prop_prices_reduced.csv")
-prprice$pool <- factor(prprice$pool)
+
 
 ```
 
-```{r}
-#######
-####
-##
-#Conclusion, using boxcoxmodel
-boxcoxmodel <- lm((sale_def^(.22)) ~ bed + bath + (area_heated) + (area) + (dist_cbd) + pool, data = prprice[-c(7),])
-summary(boxcoxmodel)
-plot(boxcoxmodel)
-summary(gvlma(boxcoxmodel))
-### adj r^2 of .7843, hetero and link function satisfied, normality not satisfied even after using the boxcox transformation. 
-# After further study, violation of normality may not be significant if both linearity and homoskedasticity are present
-
-# this was HELL
-
-```
-
-# Prediction
-
+1. This time, I want you to separate your data into testing and training. For this exercise, randomly extract 100 for testing different models, and save the other 900 for training your models
 
 ```{r}
-NewData <-data.frame("bed" = 2, "bath" =2, "area_heated" =1223, "area"=9750, "dist_cbd"=19368, "dist_lakes"=490, "pool"=factor(0))
-x <- predict(boxcoxmodel, NewData)
 
-PredictedCost <- (exp(1))^(log(x)/.22)
-print(PredictedCost)
-
-```
-
-
-##Start of Assignment 7
-
-```{r}
 #Assignment07 
 
 #1
@@ -75,22 +43,33 @@ library(party)
 library(randomForest)
 library(e1071)
 library(psych)
-train <- sample(nrow(prprice[-c(7),]), 0.9*nrow(prprice[-c(7),]))
-p.train <- prprice[train,]
+
+set.seed(1234)
+train <- sample(nrow(prprice[-7,-8]), 0.9*nrow(prprice[-7,-8]))
+
+p.train <- prprice[train,-8]
+
 p.train <- data.frame(p.train)
-p.validate <- prprice[-train,]
-describe(p.train)
+
+p.validate <- prprice[-train,-8]
+
+p.validate <- data.frame(p.validate)
+
 ```
 
+2. Run your final model you had in the previous assignment to the training data
 
 ```{r}
 #2
 
-train.model <- lm((sale_def^(.22)) ~ bed + bath + area_heated + area + dist_cbd + pool, data = p.train)
+train.model <- lm((sale_def^(.22)) ~ bed + bath + area_heated + area + dist_cbd, data = p.train)
 summary(train.model)
 plot(train.model)
 summary(gvlma(train.model))
 ```
+
+3. With the same model in part 2, run the standard LASSO regression model on the training data.
+
 
 ```{r}
 #Lasso
@@ -98,25 +77,28 @@ summary(gvlma(train.model))
 sessionInfo()
 ?gamlr
 data(p.train)
-p.train$pool <- as.numeric(p.train$pool) - 1
-x <- cbind(p.train$bed, p.train$bath, p.train$area_heated, p.train$area, p.train$dist_cbd, as.factor(p.train$pool))
-reg <- gamlr(x, p.train$sale_def^.22, verb = TRUE, standardization = TRUE)
+
+x <- cbind(p.train$bed, p.train$bath, p.train$area_heated, p.train$area, p.train$dist_cbd, p.train$dist_lakes)
+reg <- gamlr(x, p.train$sale_def^.22, verb = TRUE, standardize = TRUE)
 
 exp(coef(reg)[1])
 
 
 ```
 
+4. Now using the same model in part 2, run a 10-fold cross-validated LASSO on the training data
 
 ```{r}
 #Lasso 10 fold cross validation
 
-cv.reg <- cv.gamlr(x, p.train$sale_def^.22, nfold = 10, verb = TRUE, standardization = TRUE)
+cv.reg <- cv.gamlr(x, p.train$sale_def^.22, nfold = 10, verb = TRUE, standardize = TRUE)
 par(mfrow = c(1,1))
 plot(cv.reg)
 plot(cv.reg$gamlr)### this plot just seems so different from the example plot so I'm not sure what might be up.
 
 ```
+
+
 
 ```{r}
 #calculate RMSE for each lambda's selection method and the model in part w: AIC, BIC, AICc, cv.min, cv.1se
@@ -128,18 +110,10 @@ log(reg$lambda[which.min(BIC(reg))])
 (cv.reg$lambda.1se)
 
 
-
-log(cv.reg$gamlr$lambda)[which.min(AICc(cv.reg$gamlr))]#same as above
-log(cv.reg$gamlr$lambda)[which.min(AIC(cv.reg$gamlr))]#same as above
-log(cv.reg$gamlr$lambda)[which.min(BIC(cv.reg$gamlr))]#same as above
-
-
-
-AIC(x)
-
-#they are all the same... (besides the 1se). Not sure what this means and if its a red flag.
+# AICc, AIC, and BIC are all the same, 1se and min are different
 ```
 
+Plot Cross-validation
 
 ```{r}
 #plots
@@ -157,15 +131,54 @@ legend("topright", bty="n", lwd=1,
        
     col=c("black","orange","green","blue","purple"),
     legend=c("AICc","AIC","BIC","CV.min","CV.1se"))
-
-
-
-#RMSE
-x1<- cbind(p.validate$bed, p.validate$bath, p.validate$area_heated, p.validate$area, p.validate$dist_cbd, as.factor(p.validate$pool))
-p.validate$modelpredict <- predict(train.model, p.validate)^(1/.22)
-
-p.validate$min_lam_predict <- predict(reg, x1, lambda = 0.01)
 ```
 
 
+5. Lastly, using the testing data, I want you to calculate the RMSE for each of the lambda's selection methods discussed (AIC, BIC, AICc, cv.min, cv.1se) and the the model in part 2. Which method performed the best in prediction the home price?
 
+```{r}
+#RMSE
+#install.packages("Metrics")
+library(Metrics)
+
+p.validate1 <- data.frame(p.validate[,-1])
+
+pred <- predict(train.model, p.validate1)^(1/.22)
+actual <- p.validate$sale_def
+modelRMSE <- rmse(actual, pred)
+
+#x1<- data.frame(p.validate$bed, p.validate$bath, p.validate$area_heated, p.validate$area, p.validate$dist_cbd, as.factor(p.validate$pool))
+
+predAICc <- as.matrix(predict(reg, newdata = p.validate1, select =which.min(AICc(reg))))
+AICc_RMSE <- rmse(actual, predAICc)
+
+predAIC <- as.matrix(predict(reg, newdata = p.validate1, select =which.min(AIC(reg))))
+AIC_RMSE <- rmse(actual, predAIC)
+
+predBIC <- as.matrix(predict(reg, newdata = p.validate1, select =which.min(BIC(reg))))
+BIC_RMSE <- rmse(actual, predBIC)
+
+pred_min <- as.matrix(predict(cv.reg, newdata = p.validate1, select ="min"))
+min_RMSE <- rmse(actual, pred_min)
+
+pred_1se <- as.matrix(predict(cv.reg, newdata = p.validate1, select ="1se"))
+one.se_RMSE <- rmse(actual, pred_1se)
+
+```
+
+Model Comparison
+
+```{r}
+modelRMSE
+AICc_RMSE
+AIC_RMSE
+BIC_RMSE
+min_RMSE
+one.se_RMSE
+
+```
+
+After comparing all of the models, the original model had the lowest RMSE 75284, while all of the rest of the models had virtually the same RMSE (236815). Thus, the original model performed the best in terms  home price predicitons.
+
+
+End

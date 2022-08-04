@@ -1,0 +1,28 @@
+{
+    "id": "B90D65C2",
+    "path": null,
+    "project_path": null,
+    "type": "object_explorer",
+    "hash": "0",
+    "contents": "",
+    "dirty": false,
+    "created": 1659558491332.0,
+    "source_on_save": false,
+    "relative_order": 4,
+    "properties": {
+        "id": "c238703cc30646d4b4c1ef101eee43b3",
+        "name": "hd.reg1",
+        "title": "hd.reg1",
+        "language": "R",
+        "source_window_id": "",
+        "Source": "Source"
+    },
+    "folds": "",
+    "lastKnownWriteTime": 2150455175688,
+    "encoding": "",
+    "collab_server": "",
+    "source_window": "",
+    "last_content_update": 1659558491332,
+    "read_only": false,
+    "read_only_alternatives": []
+}

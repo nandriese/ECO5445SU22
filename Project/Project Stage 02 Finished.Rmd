@@ -1,0 +1,707 @@
+---
+title: "Project Stage 2, Summary Report"
+author: "Nick Andriese"
+date: "2022-08-02"
+output: 
+  html_document:
+    toc: true
+    toc_float: true
+    number_sections: true
+editor_options: 
+  
+  chunk_output_type: console
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(warning = FALSE, message = FALSE, echo = TRUE)
+```
+
+# Part A
+
+## Import Data and Change Column Names
+
+```{r Import Data and Change Column Names} 
+library(readr)
+library(tidyverse)
+hdata <- read_csv("hmda_sw.csv")
+colnames(hdata) <- (c("SEQ", "LoanType", "LoanPurpose", "Occupancy","LoanAmmount", "TypeAction", "MSAloc", "CountyLoc", "RaceAppl","RaceCoApp", "SexApp", "SexCoApp", "ApplIncome", "PurchType","HMDAorig", "Correction1", "Correction2", "Correction3", "UnitsProp","MaritalSt", "DepApp", "YearsAppLW", "YearsAppJob", "SelfEmpApp","BaseMIncomeApp", "BaseMIncomeCoApp", "TotalMIncomeApp", "TotalMIncomeCoApp", "ProposedMHouseExp", "PurchasePrice", "OtherFinancing", "LiquidAssets", "CommercialCredit", "AppHistoryGood", "CreditLines", "CH_mortgage", "CH_consumer", "CH_public", "Debt/IncomeHousing", "Debt/IncomeTotal", "F_or_A_loan", "TermLoan", "SpecialLoanApp", "AppraisedValue", "TypeProperty", "PMIsought", "PMIdenied", "GrantDP", "CoSign", "UnverInfo", "Reviewed", "netw", "uria", "rtdum", "bd", "mi", "old", "vr", "school", "chvalc", "dnotown", "dprop"))
+```
+
+## Data Cleaning, Selection, and Factor Labeling
+
+
+### Data Cleaning
+
+```{r Data Cleaning}
+
+### Clean errors/missing observations ###
+
+hdata[hdata == 999999.4] <- NA  
+hdata[hdata == 999999] <- NA
+
+
+```
+
+
+### Variable Selection
+
+- Outcome/Dependent Variable:  "TypeAction"
+- Variables required by Professor Eubanks:  "Debt/IncomeTotal", "RaceAppl", "MaritalSt", "SelfEmpApp", "school"
+
+The following variables were selected because Munnell et al. 1996, remark that all economic factors that are both correlated with race and origination decisions must be accounted for in the model. Additionally, they state that loan, property and applicant personal characteristics should all be included as they are also taken into when determining the risks and costs of a loan.
+
+Loan information variables: 
+
+- "LoanAmmount", "PurchType", "PurchasePrice", "TermLoan", "F_or_A_loan", "SpecialLoanApp",  "AppraisedValue", , "PMIsought", "PMIdenied", "UnverInfo", "Reviewed", "dnotown"
+
+Applicant finances, employment, and income variables: 
+
+- "YearsAppLW", "YearsAppJob", "netw", "AppHistoryGood", "CH_mortgage", "CH_consumer",  "CH_public", "LiquidAssets", "TotalMoIncomeApp", "TotalMIncomeCoApp", "OtherFinancing", "GrantDP", "CoSign", "uria", "Debt/IncomeHousing"
+
+Applicant personal information variables:  
+
+- "RaceCoApp", "SexApp", "SexCoApp", "DepApp", "old"
+
+Property Location information variables: 
+
+- "CountyLoc", "rtdum", "bd", "mi", "vr", "chvalc"
+
+
+*Unincluded Variables:
+
+- "LoanType" - only one type; "Loan Purpose" - only one purpose; "MSAloc" - only one MSA location (1120); "HMDAorig" - these are outcomes that are dependent on our selected independent and shouldn't explain racial bias more than our selected variables; "Correction1", "Correction2", "Correction3" - all not necessary as they are corrections of reason for denial; "ApplIncome", "BaseMontlyIncomeApp", "BaseMonthlyIncomeCoApp" - to help reduce colinearity with the other more precise income measures; "Occupancy" - is dummycoded under "dnotown"; "TypeProperty" is dummycoded under "dprop"; "SpecialLoanApp" is a character variable with many different types that would be hard to initerpret and not helpful in the analysis; "dprop" only has one type - single family homes/condominiums.
+
+### Hypotheses (Professor Eubank's Variables)
+
+H1 "Debt/Income Total" will be negatively related to probability of being approved, where the greater the debt, the less likelihood of being approved.
+
+H2 "MaritallSt": after controlling for relevant variables, being married will have a weak and positive relationship with the likelihood of being approved. Being married may increase the likelihood of more income in the household.
+
+H3 "SelfEmpApp": after controlling for relevant variables, being self employed will decrease the likelihood of being approved. Being self employed does not consitute a constant stream of income and introduces more uncertainty.
+
+H4 "school": after controlling for relevant variables, years of education will be positively related with the likelihood of being approved. Levels of education are positively related to income, which increases the likelihood of being approved.
+
+H5 "RaceAppl": after controlling for relevant variables, being Black will have a very weak and negative relationship with the likelihood of being approved due to potential racial bias.
+
+
+```{r new dataset}
+hd <- hdata[ ,c("TypeAction", "Debt/IncomeTotal", "RaceAppl", "MaritalSt", "SelfEmpApp", "school", "LoanAmmount", "PurchType",  "PurchasePrice", "TermLoan", "F_or_A_loan",  "AppraisedValue", "PMIsought", "PMIdenied", "UnverInfo", "Reviewed", "dnotown", "YearsAppLW", "YearsAppJob", "netw", "Debt/IncomeHousing", "AppHistoryGood", "CH_mortgage", "CH_consumer",  "CH_public", "LiquidAssets", "TotalMIncomeApp", "TotalMIncomeCoApp", "OtherFinancing", "GrantDP", "CoSign", "uria",  "RaceCoApp", "SexApp", "SexCoApp", "DepApp", "old", "CountyLoc", "rtdum", "bd", "mi", "vr", "chvalc" )]
+```
+
+
+### Factor Creation and Level Labeling
+
+```{r Factor Creation and Labeling}
+
+# Converting TypeAction to dummy variables of 0 (Denied and 1 (Approved)
+hd$TypeAction[hd$TypeAction == 2] <- 1
+hd$TypeAction[hd$TypeAction == 3] <- 0
+hd$TypeAction <- as.factor(hd$TypeAction)
+levels(hd$TypeAction) <- c("Loan Denied", "Loan Approved")
+
+hd$CountyLoc <- as.factor(hd$CountyLoc)
+levels(hd$CountyLoc) <- c("Suffolk", "other")
+
+hd$RaceAppl<- as.factor(hd$RaceAppl)
+levels(hd$RaceAppl) <- c("Black", "White")
+
+
+table(hd$RaceCoApp)
+hd$RaceCoApp[hd$RaceCoApp == 7] <- NA
+hd$RaceCoApp<- as.factor(hd$RaceCoApp)
+levels(hd$RaceCoApp) <- c("American Indian or Alaskan native", "Asian or Pacific Islander", "Black", "Hispanic", "White", "Other", "Not Applicable")
+
+table(hd$SexApp)
+hd$SexApp[hd$SexApp==3] <- NA
+hd$SexApp<- as.factor(hd$SexApp)
+levels(hd$SexApp) <- c("Male", "Female")
+
+hd$SexCoApp[hd$SexCoApp==8] <- NA #invalid level of 8 needed to be removed
+hd$SexCoApp[hd$SexCoApp==3] <- NA 
+hd$SexCoApp[hd$SexCoApp==4] <- NA 
+table(hd$SexCoApp)
+hd$SexCoApp <- as.factor(hd$SexCoApp)
+levels(hd$SexCoApp) <- c("Male", "Female")
+
+
+hd$PurchType[hd$PurchType == 2 ] <- NA #moved to NA because causes issues in the cross validation (changes # of levels between groups)
+hd$PurchType <- as.factor(hd$PurchType)
+levels(hd$PurchType) <- c("Loan was not sold in calendar year covered by register", "FNMA", "FHLMC", "FMHA", "Commercial Bank", "Savings bank or savings association", "Life Insurance company", "Affiliate instituion")
+
+
+hd$MaritalSt[hd$MaritalSt == "S"] <- "U"
+hd$MaritalSt <- as.factor(hd$MaritalSt)
+levels(hd$MaritalSt) <-  c("Married", "Unmarried (separated, single, divorced, or widowed)")
+
+hd$SelfEmpApp <- as.factor(hd$SelfEmpApp)
+levels(hd$SelfEmpApp) <- c("Not Self-employed", "Self-employed")
+
+hd$AppHistoryGood[hd$AppHistoryGood==666] <- NA #cleaned value
+hd$AppHistoryGood <- as.factor(hd$AppHistoryGood)
+levels(hd$AppHistoryGood) <- c("No", "Yes") 
+
+hd$CH_mortgage <- as.factor(hd$CH_mortgage)
+levels(hd$CH_mortgage) <-c("Not late mortgage payments", "No mortgage payment history", "ONe or two late mortgage payments", "More than two late mortgage payments")
+
+hd$CH_consumer <- as.factor(hd$CH_consumer)
+levels(hd$CH_consumer) <- c("no slow pay or delinquent accounts, but sufficient references for determination", "One or two slow pay accounts each with one or two payments 30 days past due", "More than two slow pay accounts each with one or two payments 30 days past due; or one or two chronic slow pay accounts with three or more payments 30 days paste due in any 12-month period", "insufficient credit history or references for determination", "delinquent credit history containing accounts with a history of payments 60 days past due", "Serious delinquencies containing accounts with a history of payments 90 days past due") #should I shorten these?*****
+
+hd$CH_public <- as.factor(hd$CH_public)
+levels(hd$CH_public) <- c("Info not included or no public record defaults", "Bankruptcy or defaults") #there are multiple 0 and 1's with different labels - can't change now because we don't know which 0's and 1's are which, therefore all 0's will be 0 and all 1's will be 1.
+
+hd$F_or_A_loan[hd$F_or_A_loan == 3] <- NA
+hd$F_or_A_loan <- as.factor(hd$F_or_A_loan)
+levels(hd$F_or_A_loan) <- c("Adjustable", "Fixed")
+
+hd$PMIsought <- as.factor(hd$PMIsought)
+levels(hd$PMIsought) <- c("No or info not available", "Yes")
+
+hd$PMIdenied <- as.factor(hd$PMIdenied)
+levels(hd$PMIdenied)  <- c("PMI approve, did not apply, or info not available", "PMI sought and DENIED")
+
+hd$GrantDP <- as.factor(hd$GrantDP)
+levels(hd$GrantDP) <- c("No or not available", "Yes")
+
+hd$CoSign <- as.factor(hd$CoSign)
+levels(hd$CoSign) <- c("No or not available", "Yes")
+
+hd$UnverInfo <- as.factor(hd$UnverInfo)
+levels(hd$UnverInfo) <- c("Not applicable (all verifiable)", "Some information unverifiable")
+
+hd$rtdum <- as.factor(hd$rtdum)
+levels(hd$rtdum) <- c("≤ .30", "> .30")
+
+hd$bd <- as.factor(hd$bd)
+levels(hd$bd) <- c("≤ MSA median", "> MSA median")
+
+hd$mi <- as.factor(hd$mi)
+levels(hd$mi) <- c("≤ MSA median", "> MSA median")
+
+hd$old[hd$old==2] <- NA #remove "missing" factor
+hd$old <- as.factor(hd$old)
+levels(hd$old) <- c("≤ MSA median", "> MSA median")
+
+hd$vr <- as.factor(hd$vr)
+levels(hd$vr) <- c("≤ MSA median", "> MSA median")
+
+hd$dnotown <- as.factor(hd$dnotown)
+levels(hd$dnotown) <- c("Owner Occupied", "Not owner occupied, or information not available")
+
+```
+
+# Part B
+
+## Summary Statistics
+
+```{r Summary Statistics and Frequencies}
+
+library(skimr)
+library(gtsummary)
+library(gapminder)
+library(vtable)
+library(psych)
+library(summarytools)
+
+
+print(dfSummary(hd,
+                plain.ascii = FALSE,
+          varnumbers = FALSE,
+          graph.magnif = 0.75,
+          valid.col    = FALSE),
+          method = "render") 
+
+```
+
+## Correlations and Plots
+
+```{r}
+
+cor(hd[,unlist(lapply(hd, is.numeric))], use = "complete.obs")
+cor(hd$`Debt/IncomeTotal`,hd$school, use = "complete.obs")
+cor(hd$TotalMIncomeApp,hd$school, use = "complete.obs")
+
+hist(hd$`Debt/IncomeTotal`, xlab = "Debt/Income Total (in thousands)", xlim = c(0,150), breaks = 50)
+hist(hd$school, xlab = "Years of Education", xlim = c(0,30), breaks = 15)
+
+plot(hd$school,hd$TotalMIncomeApp, xlab = "Years of Education", ylab = "Total Monthly Income of Applicant")
+
+plot(hd$school, hd$netw, ylim = c(-100,2000), xlab = "Years of Education", ylab = "Net Worth")
+
+
+# More plots are in the figure above
+```
+
+## Transformations
+
+We will be using a square-root transformation for each of these variables, as they are skewed to the right.
+
+```{r}
+
+hist(hd$YearsAppJob)
+hd$YearsAppJob <- sqrt(hd$YearsAppJob) #skewed right
+hist(hd$YearsAppJob, breaks = 20)
+
+summary(hd$YearsAppJob)
+
+hist(hd$YearsAppLW)
+hd$YearsAppLW <- sqrt(hd$YearsAppLW) #skewed right
+hist(hd$YearsAppLW, breaks = 20)
+
+summary(hd$YearsAppLW)
+
+hist(hd$TotalMIncomeApp)
+hd$TotalMIncomeApp <- sqrt(hd$TotalMIncomeApp) #skewed 
+hist(hd$TotalMIncomeApp, breaks = 50)
+
+summary(hd$TotalMIncomeApp)
+
+hist(hd$TotalMIncomeCoApp)
+hd$TotalMIncomeCoApp <- sqrt(hd$TotalMIncomeCoApp) #skewed right
+hist(hd$TotalMIncomeCoApp, breaks = 50)
+
+summary(hd$TotalMIncomeCoApp)
+
+hist(hd$LiquidAssets)
+hd$LiquidAssets <- sqrt(hd$LiquidAssets) #skewed right
+hist(hd$LiquidAssets, breaks = 50)
+
+summary(hd$LiquidAssets)
+
+
+```
+
+
+## Sample Summary
+
+The sample consisted of 2380 subjects: 78.4% were male, 20.8% were female and 0.8% did not provide information on gender; 14.2% were Black and 85.8% were White; 60.7% were married, 3.1% were single, divorced or widowed, and 36.2% were separated; 11.6% were self employed; 82.6% lived in Suffolk county; 33.1% took out Adjustable-rate loans and 66.7% Fixed-rate loans; 22.6% sought out Private Mortgage Insurance and 2% of those who sought out Private Mortgage Insurance were denied; 96.6% occupied the house they owned; 91.2% had credit histories that met loan policy guidelines for approval; 16.8% received gifts or grant money used to pay for the house; 2.8% had a cosigner on the mortgage; 54% had an age greater than the MSA median; 88% had their loan approved.
+
+The following outlines the means of the sample on several relevant variables:Average Debt/Income Total was 33.1; average years of education was 15.5; average Loan Amount was $139,100; average Purchase Price was $189,900; average Appraised Value of the homes were $198,500; average Loan Term was 342.5 months (28.5 years); average years employed in applicable line of work was 10.6; average years employed on applicable job was 6.5; average net worth was $253,000; average amount of liquid assets was $93,100; average monthly income of the applicant was $4,914; average monthly income of coapplicant was $1,442; average number of dependents claimed was 0.8.
+
+*See the print out for all other summary statistics.
+
+
+# Part C
+
+## Logistic Regression 
+
+```{r}
+library(pROC)
+library(rpart.plot)
+library(rpart.plot)
+library(party)
+library(randomForest)
+library(e1071)
+library(jtools)
+
+
+fit.hd <- glm(TypeAction ~ ., data = hd, family = "binomial", na.action = na.roughfix)
+
+summ(fit.hd)
+```
+
+### Interpretation of Hypotheses:
+
+Hypothesis 1 was supported: Debt/Income Total was negatively related to the likelihood of being approved (b = -.06, SE = .01, p < .05). 
+
+Hypothesis 2 was supported: Not being married was negatively related to the likelihood of being approved (b = -.7, SE =.28, p < .05).
+
+Hypothesis 3 was not supported: Being self-employed was not significantly related to the likelihood of being approved (b = -.57, SE = .31, p = .07)
+
+Hypothesis 4 was not supported: Years of education was not significantly related to the likelihood of being approved, although it is nearing significance (b = .07, SE = .04, p = .06) 
+
+Hypothesis 5 was not supported: Race was not significantly related to the likelihood of being approved (White -> b = .34, SE = .39, p = .38)
+
+
+## Model Estimation
+
+```{r}
+prob.dh <-predict(fit.hd, hd, type = "response", na.action = na.roughfix)
+
+logit.pred <- factor(prob.dh > .50, levels = c(FALSE, TRUE),labels = c("Loan Denied", "Loan Approved")) #why would I get NA's here and how can I get rid of them?
+
+logit.perf <-  table(hd$TypeAction, logit.pred, dnn = c("Actual", "Predicted"))
+
+logit.perf
+
+```
+
+## ROC Curve and AUC
+
+```{r}
+my_roc <- roc(hd$TypeAction ~ prob.dh, plot = TRUE)
+
+auc(my_roc)
+```
+
+## Confusion Matrix with Alternative Cut offs
+
+### Threshold Cut off (.1059946)
+
+```{r}
+# Finds Optimal threshold
+coords(my_roc, "best", ret = "threshold")
+
+threshold <- my_roc$thresholds[which.max(my_roc$sensitivities + my_roc$specificities)]
+
+threshold 
+
+logit.pred.thresh <- factor(prob.dh > threshold, levels = c(FALSE, TRUE),labels = c("Loan Denied", "Loan Approved")) #why would I get NA's here and how can I get rid of them?
+
+logit.perf.thresh <-  table(hd$TypeAction, logit.pred.thresh, dnn = c("Actual", "Predicted"))
+logit.perf.thresh 
+```
+
+```{r}
+logit.pred70<- factor(prob.dh > .70, levels = c(FALSE, TRUE),labels = c("Loan Denied", "Loan Approved")) #why would I get NA's here and how can I get rid of them?
+
+logit.perf70 <-  table(hd$TypeAction, logit.pred70, dnn = c("Actual", "Predicted"))
+logit.perf70
+```
+
+
+### .65 Cut Off
+
+```{r}
+logit.pred65<- factor(prob.dh > .65, levels = c(FALSE, TRUE),labels = c("Loan Denied", "Loan Approved")) #why would I get NA's here and how can I get rid of them?
+
+logit.perf65 <-  table(hd$TypeAction, logit.pred65, dnn = c("Actual", "Predicted"))
+logit.perf65
+
+
+```
+
+### .85 Cut Off
+
+```{r}
+
+logit.pred85<- factor(prob.dh > .85, levels = c(FALSE, TRUE),labels = c("Loan Denied", "Loan Approved")) #why would I get NA's here and how can I get rid of them?
+
+logit.perf85 <-  table(hd$TypeAction, logit.pred85, dnn = c("Actual", "Predicted"))
+logit.perf85
+
+```
+
+### .80 Cut Off
+
+```{r}
+logit.pred80<- factor(prob.dh > .80, levels = c(FALSE, TRUE),labels = c("Loan Denied", "Loan Approved")) #why would I get NA's here and how can I get rid of them?
+
+logit.perf80 <-  table(hd$TypeAction, logit.pred80, dnn = c("Actual", "Predicted"))
+logit.perf80
+```
+
+
+### .05 Cut Off
+
+```{r}
+logit.pred05<- factor(prob.dh > .05, levels = c(FALSE, TRUE),labels = c("Loan Denied", "Loan Approved")) #why would I get NA's here and how can I get rid of them?
+
+logit.perf05 <-  table(hd$TypeAction, logit.pred05, dnn = c("Actual", "Predicted"))
+logit.perf05
+```
+
+### .60 Cut Off
+
+```{r}
+logit.pred60<- factor(prob.dh > .60, levels = c(FALSE, TRUE),labels = c("Loan Denied", "Loan Approved")) #why would I get NA's here and how can I get rid of them?
+
+logit.perf60 <-  table(hd$TypeAction, logit.pred60, dnn = c("Actual", "Predicted"))
+logit.perf60
+```
+
+### .55 Cut Off
+
+```{r}
+logit.pred55<- factor(prob.dh > .55, levels = c(FALSE, TRUE),labels = c("Loan Denied", "Loan Approved")) #why would I get NA's here and how can I get rid of them?
+
+logit.perf55 <-  table(hd$TypeAction, logit.pred55, dnn = c("Actual", "Predicted"))
+logit.perf55
+```
+
+### .30 Cut Off
+
+```{r}
+
+logit.pred30<- factor(prob.dh > .30, levels = c(FALSE, TRUE),labels = c("Loan Denied", "Loan Approved")) #why would I get NA's here and how can I get rid of them?
+
+logit.perf30 <-  table(hd$TypeAction, logit.pred30, dnn = c("Actual", "Predicted"))
+logit.perf30
+```
+
+### .25 Cut Off
+
+```{r}
+
+logit.pred25<- factor(prob.dh > .25, levels = c(FALSE, TRUE),labels = c("Loan Denied", "Loan Approved")) #why would I get NA's here and how can I get rid of them?
+
+logit.perf25 <-  table(hd$TypeAction, logit.pred25, dnn = c("Actual", "Predicted"))
+logit.perf25
+```
+
+
+## Model Evaluation
+
+```{r}
+
+#performance function
+
+performance <- function(table, n = 4){
+  if(!all(dim(table) == c(2,2)))
+    stop("Must be a 2 x 2 table")
+  tn = table[1,1]
+  fp = table[1,2]
+  fn = table[2,1]
+  tp = table[2,2]
+  sensitivity = tp/(tp+fn)
+  specificity = tn/(tn+fp)
+  ppp = tp/(tp+fp)
+  npp = tn/(tn+fp)
+  hitrate = (tp+tn)/(tp+tn+fp+fn)
+  result <- paste0("Sensitivity = ", round(sensitivity,n),
+                   "\nSpecificity = ",round(specificity,n),
+                   "\nPositive Predictive Value = ", round(ppp,n),
+                   "\nNegative Predictive Value = ", round(npp,n),
+                   "\nAccuracy = ", round(hitrate,n))
+  cat(result)
+}
+
+performance(logit.perf05) # 0.05
+
+performance(logit.perf25) # 0.25
+
+performance(logit.perf30) # 0.30
+
+performance(logit.perf) # 0.50
+
+performance(logit.perf55) # 0.55**
+
+performance(logit.perf60) # 0.60
+
+performance(logit.perf65) # 0.65
+
+performance(logit.perf70) # 0.70
+
+performance(logit.perf80) # 0.80
+
+performance(logit.perf85) # 0.85
+
+performance(logit.perf.thresh) # 0.8979749
+
+
+```
+
+## Summary of Findings
+
+After performing several logistic regressions, each with different cutoff points, the model with a cutoff of .898 (logit.perf.thresh) yielded the highest collective sensitivity (.8897) and specificity (.9088) scores (as it was the optimal cut off score) whereas the model with a cutoff of .55 (logit.perf55) yielded the highest accuracy score (.9475). As we are most concerned with accuracy, we will use a cutoff of .55 going forward.
+
+
+# Part D
+
+## 10 Fold Cross Validation
+
+```{r}
+# do a cross
+#install.packages("boot")
+
+
+library(boot)
+
+
+set.seed(1234)
+
+train <- sample(nrow(hd), 0.7*nrow(hd))
+hd.train <-  hd[train,]
+hd.validate <- hd[-train,]
+
+hd.train <- (na.roughfix(hd.train))
+hd.validate <- (na.roughfix(hd.validate)) #replaces with mean or median depending on data type
+
+
+table(hd.train$TypeAction)
+table(hd.validate$TypeAction)
+
+#cv.glm(hd.train, fit.hd, K = 10) #error with RaceCoApp column 33
+
+train.fit <- cv.glm(data = hd.train[,-33], glmfit =  fit.hd, K = 10) 
+
+```
+
+## Model Estimates
+
+```{r}
+prediction <- predict(fit.hd, hd.validate, type = "response", select =train.fit$delta[2], na.action = na.roughfix)
+
+cv.pred50 <- factor(prediction > .50, levels = c(FALSE, TRUE),labels = c("Loan Denied", "Loan Approved"))
+
+cv.perf50 <-  table(hd.validate$TypeAction, cv.pred50, dnn = c("Actual", "Predicted"))
+
+cv.perf50
+```
+
+### ROC, AUC, Threshold Cutoff (.946)
+
+```{r}
+my_roc.cv <- roc(hd.validate$TypeAction ~ prediction, plot = TRUE)
+
+auc(my_roc.cv)
+
+
+coords(my_roc.cv, "best", ret = "threshold")
+
+threshold.cv <- my_roc.cv$thresholds[which.max(my_roc.cv$sensitivities + my_roc.cv$specificities)]
+
+threshold.cv
+
+cv.pred.thresh <- factor(prediction > threshold.cv, levels = c(FALSE, TRUE),labels = c("Loan Denied", "Loan Approved"))
+
+cv.perf.thresh <-  table(hd.validate$TypeAction, cv.pred.thresh, dnn = c("Actual", "Predicted"))
+cv.perf.thresh
+```
+
+### .10 Cut Off
+
+```{r}
+cv.pred10 <- factor(prediction > .10, levels = c(FALSE, TRUE),labels = c("Loan Denied", "Loan Approved"))
+
+cv.perf10 <-  table(hd.validate$TypeAction, cv.pred10, dnn = c("Actual", "Predicted"))
+cv.perf10
+```
+
+### .25 Cut Off
+
+```{r}
+
+cv.pred25 <- factor(prediction > .25, levels = c(FALSE, TRUE),labels = c("Loan Denied", "Loan Approved"))
+
+cv.perf25 <-  table(hd.validate$TypeAction, cv.pred25, dnn = c("Actual", "Predicted"))
+cv.perf25
+
+```
+
+### .40 Cut Off
+
+```{r}
+cv.pred40 <- factor(prediction > .40, levels = c(FALSE, TRUE),labels = c("Loan Denied", "Loan Approved"))
+
+cv.perf40 <-  table(hd.validate$TypeAction, cv.pred40, dnn = c("Actual", "Predicted"))
+cv.perf40
+```
+ 
+### .50 Cut Off 
+ 
+```{r}
+cv.pred55 <- factor(prediction > .55, levels = c(FALSE, TRUE),labels = c("Loan Denied", "Loan Approved"))
+
+cv.perf55 <-  table(hd.validate$TypeAction, cv.pred55, dnn = c("Actual", "Predicted"))
+cv.perf55
+```
+ 
+ 
+### .60 Cut Off
+
+```{r}
+cv.pred60 <- factor(prediction > .60, levels = c(FALSE, TRUE),labels = c("Loan Denied", "Loan Approved"))
+
+cv.perf60 <-  table(hd.validate$TypeAction, cv.pred60, dnn = c("Actual", "Predicted"))
+cv.perf60
+```
+
+### .65 Cut Off
+ 
+```{r}
+cv.pred65 <- factor(prediction > .65, levels = c(FALSE, TRUE),labels = c("Loan Denied", "Loan Approved"))
+
+cv.perf65 <-  table(hd.validate$TypeAction, cv.pred65, dnn = c("Actual", "Predicted"))
+cv.perf65
+```
+ 
+### .75 Cut Off 
+ 
+```{r}
+cv.pred75 <- factor(prediction > .75, levels = c(FALSE, TRUE),labels = c("Loan Denied", "Loan Approved"))
+
+cv.perf75 <-  table(hd.validate$TypeAction, cv.pred75, dnn = c("Actual", "Predicted"))
+cv.perf75
+```
+ 
+
+
+### Performance Tables
+
+```{r}
+performance(cv.perf10)
+
+performance(cv.perf25)
+
+performance(cv.perf40)
+
+performance(cv.perf50)
+
+performance(cv.perf55)
+
+performance(cv.perf60) #***
+
+performance(cv.perf65)
+
+performance(cv.perf75)
+
+performance(cv.perf.thresh) # 0.946
+
+```
+
+
+# Part E
+
+## Superior Model Classification
+
+After conducting the logistic cross-validation, the optimum cut off value of .946 was found, which yielded the highest collective sensitivity (.814) and specificity (.9294) scores. However, a cutoff of .60 yielded the highest model accuracy score (.9426). Therefore, we will be using the cutoff value of .60 as we are concerned the most with accuracy. 
+
+
+## Re-estimating with full data sample
+
+```{r}
+
+pre <- predict(fit.hd, hd, type = "response", select =train.fit$delta[2], na.action = na.roughfix)
+
+xcv.pred60 <- factor(pre > .60, levels = c(FALSE, TRUE),labels = c("Loan Denied", "Loan Approved"))
+
+xcv.perf60 <-  table(hd$TypeAction, xcv.pred60, dnn = c("Actual", "Predicted"))
+
+xcv.perf60
+
+```
+
+### ROC and AUC
+
+```{r}
+my_roc.cvx <- roc(hd$TypeAction ~ pre, plot = TRUE)
+
+auc(my_roc.cvx)
+```
+
+### Confusion Matrix
+
+```{r}
+xcv.perf60
+```
+
+### Model Evaluation
+
+```{r}
+
+performance(xcv.perf60)
+
+performance(logit.perf60)
+
+xcv.perf60
+logit.perf60
+
+auc(my_roc.cvx)
+auc(my_roc)
+
+```
+
+## Summary
+
+After evaluating the performance of the superior model and the model estimated in part C, there were no differences between the two models on any criteria. Additionally, the AUC for the ROC curve was equal for both models. Being honest, I'm not quite sure why this is the case, as I did add in the delta values from the cross validation. Perhaps they were so insignificant that they did not have an effect on the model. Or, perhaps I made a mistake. Either way, I have learned a lot and enjoyed the course - Thanks Josh!
+

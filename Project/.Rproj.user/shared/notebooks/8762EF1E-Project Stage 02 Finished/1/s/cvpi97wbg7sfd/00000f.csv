@@ -1,0 +1,5 @@
+"0",""
+"0","### Clean errors/missing observations ###"
+"0",""
+"0","hdata[hdata == 999999.4] <- NA  "
+"0",""
